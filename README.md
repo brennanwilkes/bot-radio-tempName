@@ -25,8 +25,10 @@ https://developer.spotify.com/dashboard/a
 **Create and activate a Python virtual environment**
 ```sh
 python3 -m venv venv
-source venv/bin/activate```
+source venv/bin/activate
+```
 
 **Install Python packages**
 ```sh
-python3 -m pip install -r requirements.txt```
+python3 -m pip install -r requirements.txt
+```
