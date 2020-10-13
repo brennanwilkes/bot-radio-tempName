@@ -32,8 +32,11 @@ q = test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?
 
 p = playlist(q)
 
+print(p.name)
+print(p.owner)
+
 for s in p.songs:
 	print(s.name)
 
-#print(json.dumps(q[0], indent=4))
+#print(json.dumps(q, indent=4))
 #test.printPlaylist(q)

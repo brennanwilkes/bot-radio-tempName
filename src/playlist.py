@@ -21,9 +21,19 @@ class song:
 class playlist:
 
 	songs = []
+	collaborative = False
+	description = ""
+	name = ""
+	owner = ""
+
 
 	def __init__(this, playlistJSON):
 
+		this.collaborative = playlistJSON["collaborative"]
+		this.description = playlistJSON["description"]
+		this.name = playlistJSON["name"]
+		this.owner = playlistJSON["owner"]["display_name"]
+
 		this.songs = []
-		for songJSON in playlistJSON:
+		for songJSON in playlistJSON["tracks"]["items"]:
 			this.songs.append(song(songJSON))

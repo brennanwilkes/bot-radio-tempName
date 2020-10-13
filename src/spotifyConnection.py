@@ -64,7 +64,9 @@ class spotifyConnection:
 			raise Exception("Invalid playlist",playlist)
 
 		#query spotify
-		return this.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')["items"]
+		#return this.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')["items"]
+
+		return this.con.playlist("spotify:playlist:"+playlistID)
 
 	#Debug
 	def printPlaylist(this, playlist):
