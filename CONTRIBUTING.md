@@ -93,3 +93,18 @@ git push origin main
     git push origin main
     ```
 
+---
+
+| Type        | Description |
+| ----------- | ----------- |
+| build       | Change to the build system |
+| chore       | A programming chore with little/no impact on code (eg: bump version numbers) |
+| ci          | Change to the continuous integration system |
+| docs        | Change to user/api documentation (not comments) |
+| feat        | Add a new feature. Would result in a new MINOR version number.  x.0 → x.1 |
+| fix         | Fixes an issue/bug. Would result in a new PATCH version number. x.y.0 → x.y.1 |
+| perf        | Change related to performance |
+| refactor    | Change to code structure without impacting code function. |
+| revert      | Undo a previous change (ensure to reference the change(s) being reverted) |
+| style       | Change code formatting without changing structure or function. |
+| test        | Changes to test cases or test system. |
