@@ -7,6 +7,11 @@ PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)
 
 class spotifyConnection:
 
+	con = None
+	id = ""
+	secret = ""
+	uri = ""
+
 	#Constructor
 	def __init__(this, ID_PATH = PREFIX_PATH+"/auth/id", SECRET_PATH = PREFIX_PATH+"/auth/secret", URI_PATH = PREFIX_PATH+"/auth/uri"):
 
