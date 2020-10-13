@@ -33,10 +33,13 @@ BotClient.run(discordClient.token())
 
 
 
+
 test = spotifyConnection()
 q = test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?si=okRaEV_wTnqJnMbmQEBrXA")
 
 p = playlist(q)
+
+BotClient.playlist = p
 
 print(p.name)
 print(p.owner)
