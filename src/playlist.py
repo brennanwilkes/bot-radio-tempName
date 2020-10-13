@@ -1,5 +1,14 @@
+from __future__ import unicode_literals
+import youtube_dl
+
 from youtube_search import YoutubeSearch
-import pafy
+
+
+
+
+def debug(data):
+	print("callback")
+	print(data)
 
 class song:
 
@@ -43,14 +52,20 @@ class song:
 		if(this.youtubeID == None):
 			this.youtubeID = this.getYoutubeSearch()
 
-		vid = pafy.new("https://www.youtube.com/watch?v="+this.youtubeID)
+		ydl_opts = {
+			'format': 'bestaudio/best',
+			'postprocessors': [{
+			'key': 'FFmpegExtractAudio',
+			'preferredcodec': 'mp3',
+			'preferredquality': '192',
+		}],
+			'outtmpl': '%(title)s.%(etx)s',
+			'quiet': False
+		}
 
-		stream = vid.getbestaudio(preftype="m4a")
+		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+			ydl.download(["https://www.youtube.com/watch?v="+this.youtubeID])  # Download into the current working directory
 
-		print(this.youtubeID)
-		#print(stream.url)
-		#print(stream.url_https)
-		stream.download(filepath="audioCache/"+this.name.replace(' ', '-')+"."+stream.extension)
 
 class playlist:
 
