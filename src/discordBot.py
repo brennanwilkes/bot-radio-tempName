@@ -17,7 +17,7 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         print('Message from {0.author}: {0.content}'.format(message))
         secret_passphrase = "wah"
-        if message.content == secret_passphrase and message.author.id == 224020595103236096:
+        if message.content == secret_passphrase:# and message.author.id == 224020595103236096:
 
             await message.channel.send("no u")
             '''
@@ -35,6 +35,3 @@ class MyClient(discord.Client):
                     download_image(att.url,str(message.channel.id),str(msg.id))
             print("Attachments ({}), Embeds({})".format(atts, embs))
             '''
-
-client = MyClient()
-client.run(token())
