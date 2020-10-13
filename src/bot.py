@@ -1,5 +1,5 @@
 import re
-import importlib
+from importlib import util
 import json
 
 
@@ -7,8 +7,8 @@ import json
 PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)
 
 def importSrcFile(fn):
-	spec = importlib.util.spec_from_file_location(fn, PREFIX_PATH+"/"+fn)
-	getModule = importlib.util.module_from_spec(spec)
+	spec = util.spec_from_file_location(fn, PREFIX_PATH+"/"+fn)
+	getModule = util.module_from_spec(spec)
 	spec.loader.exec_module(getModule)
 	return getModule
 
