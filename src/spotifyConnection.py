@@ -1,16 +1,14 @@
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
-import json
 import re
 
 #Relative path to this file
-PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)+"/"
+PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)
 
 class spotifyConnection:
 
 	#Constructor
-	def __init__(this, ID_PATH = PREFIX_PATH+"auth/id", SECRET_PATH = PREFIX_PATH+"auth/secret", URI_PATH = PREFIX_PATH+"auth/uri"):
+	def __init__(this, ID_PATH = PREFIX_PATH+"/auth/id", SECRET_PATH = PREFIX_PATH+"/auth/secret", URI_PATH = PREFIX_PATH+"/auth/uri"):
 
 		#Load ID
 		try:
@@ -63,14 +61,7 @@ class spotifyConnection:
 		#query spotify
 		return this.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')["items"]
 
+	#Debug
 	def printPlaylist(this, playlist):
 		for song in playlist:
 			print(song["track"]["name"]," - ",song["track"]["album"]["name"]," - ",song["track"]["artists"][0]["name"])
-
-
-
-
-
-test = spotifyConnection()
-q = test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?si=okRaEV_wTnqJnMbmQEBrXA")
-test.printPlaylist(q)
