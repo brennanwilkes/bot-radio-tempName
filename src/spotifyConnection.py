@@ -1,9 +1,9 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-import re
+import re, sys
 
 #Relative path to this file
-PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)
+PREFIX_PATH = sys.path[0]
 
 class spotifyConnection:
 
