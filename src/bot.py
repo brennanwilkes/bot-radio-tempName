@@ -1,10 +1,11 @@
 import re
 from importlib import util
 import json
+import sys
 
 
 #Relative path to this file
-PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)
+PREFIX_PATH = sys.path[0]
 
 def importSrcFile(fn):
 	spec = util.spec_from_file_location(fn, PREFIX_PATH+"/"+fn)
