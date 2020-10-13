@@ -1,9 +1,13 @@
+from youtube_search import YoutubeSearch
+
+
 class song:
 
 	album = ""
 	name = ""
 	artists = []
 	explicit = False
+	duration = 0
 
 	def __init__(this, songJSON):
 
@@ -16,6 +20,23 @@ class song:
 		this.explicit = songJSON["track"]["explicit"]
 
 		this.name = songJSON["track"]["name"]
+
+		this.duration = songJSON["track"]["duration_ms"]
+
+	def compSongByDuration(this, songYoutbeJSON):
+		songYoutbeJSON = songYoutbeJSON["duration"].split(":")
+		songYoutbeJSON = (int(songYoutbeJSON[0])*60+int(songYoutbeJSON[1]))*1000
+		return abs(this.duration - songYoutbeJSON)
+
+	def getYoutubeSearch(this):
+		search = this.name + " by "
+		for a in this.artists:
+			search += a
+		query = YoutubeSearch(search, max_results=10).to_dict()
+
+		return sorted(query,key=lambda s: this.compSongByDuration(s))[0]
+
+
 
 
 class playlist:
