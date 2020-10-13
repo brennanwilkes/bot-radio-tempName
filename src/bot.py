@@ -32,11 +32,20 @@ q = test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?
 
 p = playlist(q)
 
-print(p.name)
-print(p.owner)
-
+#p.updateYoutubeIDs(True)
 for s in p.songs:
-	print(s.name)
+	s.downloadAudio()
 
-#print(json.dumps(q, indent=4))
+
+
+#print(p.name)
+#print(p.owner)
+
+
+
+#print(json.dumps(p.songs[0].getYoutubeSearch(),indent=4))
+
+#print(p.songs[0].duration)
+
+#print(json.dumps(q["tracks"]["items"][0], indent=4))
 #test.printPlaylist(q)
