@@ -47,14 +47,14 @@ class song:
 
 		return query[0]["id"]
 
-	def downloadAudio(this,override=False,verbose=False):
+	def downloadAudio(this,override=False,debug=False):
 
 		if(this.youtubeID == None):
 			this.youtubeID = this.getYoutubeSearch()
 
 
-		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".NA")):
-			if(verbose): print("File exists! Skipping")
+		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".part")):
+			if(debug): print("File exists! Skipping")
 			return
 
 
@@ -66,7 +66,7 @@ class song:
 			"preferredquality": "192",
 		}],
 			"outtmpl": MAIN_PATH+"/audioCache/"+this.youtubeID+".%(etx)s",
-			"quiet": not verbose
+			"quiet": not debug
 		}
 
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -101,3 +101,7 @@ class playlist:
 			song.youtubeID = song.getYoutubeSearch();
 
 			if(debug): print("found",song.youtubeID)
+
+	def downloadAllSongs(this,debug=False,override=False):
+		for song in this.songs:
+			song.downloadAudio(debug=debug,override=override)
