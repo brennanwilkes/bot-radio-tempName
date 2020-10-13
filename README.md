@@ -16,5 +16,5 @@ OR if you have an ssh key setup
 git clone git@github.com:brennanwilkes/bot-radio-tempName.git
 ```
 
-**Install pyspotify**
-https://pyspotify.readthedocs.io/en/latest/installation/
+**Install spotipy**  
+https://spotipy.readthedocs.io/en/2.16.0/#installation
