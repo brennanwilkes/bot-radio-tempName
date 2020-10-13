@@ -18,3 +18,6 @@ git clone git@github.com:brennanwilkes/bot-radio-tempName.git
 
 **Install spotipy**  
 https://spotipy.readthedocs.io/en/2.16.0/#installation
+
+**Set up spotify**  
+https://developer.spotify.com/dashboard/a
