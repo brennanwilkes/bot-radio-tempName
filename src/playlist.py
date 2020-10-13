@@ -2,13 +2,13 @@ from __future__ import unicode_literals
 import youtube_dl
 
 from youtube_search import YoutubeSearch
+import os, sys
+import glob
 
 
-
-
-def debug(data):
-	print("callback")
-	print(data)
+#Relative path to this file
+PREFIX_PATH = sys.path[0]
+MAIN_PATH = PREFIX_PATH+"/.."
 
 class song:
 
@@ -45,22 +45,28 @@ class song:
 			search += a
 		query = YoutubeSearch(search, max_results=1).to_dict()
 
-		#return sorted(query,key=lambda s: this.compSongByDuration(s))[0]["id"]
 		return query[0]["id"]
 
-	def downloadAudio(this):
+	def downloadAudio(this,override=False,verbose=False):
+
 		if(this.youtubeID == None):
 			this.youtubeID = this.getYoutubeSearch()
 
+
+		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".NA")):
+			if(verbose): print("File exists! Skipping")
+			return
+
+
 		ydl_opts = {
-			'format': 'bestaudio/best',
-			'postprocessors': [{
-			'key': 'FFmpegExtractAudio',
-			'preferredcodec': 'mp3',
-			'preferredquality': '192',
+			"format": "bestaudio/best",
+			"postprocessors": [{
+			"key": "FFmpegExtractAudio",
+			"preferredcodec": "mp3",
+			"preferredquality": "192",
 		}],
-			'outtmpl': '%(title)s.%(etx)s',
-			'quiet': False
+			"outtmpl": MAIN_PATH+"/audioCache/"+this.youtubeID+".%(etx)s",
+			"quiet": not verbose
 		}
 
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
