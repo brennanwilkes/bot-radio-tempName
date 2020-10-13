@@ -27,11 +27,17 @@ class MyClient(discord.Client):
         self.spotC = spot.spotifyConnection()
         self.playlist = playlist.playlist(self.spotC.loadPlaylist(url))
 
+    '''
+    #not implemented yet
+    async def leave(self):
+        await self.voice_client.disconnect()
+    '''
+
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
 
     async def on_message(self, message):
-        if not message.content[0] == self.commandChar:
+        if (not len(message.content)) or (not message.content[0] == self.commandChar):
             return
         
         args = message.content.split(" ")
@@ -44,25 +50,24 @@ class MyClient(discord.Client):
         elif args[0] == ".play":
             self.makePlaylist(args[1])
         
-            #self.joinVC
+            #connect to the voice channel that the person who wrote the message is in
+            VC = await message.author.voice.channel.connect()
+            '''
+            #From music bot discord.py example - might need this in the future
+            if ctx.voice_client is not None:
+                return await ctx.voice_client.move_to(channel)
+            '''
+
+            song_path = PREFIX_PATH + "/test.webm"
+
+            if os.name == 'nt': #windows
+                source = await discord.FFmpegOpusAudio.from_probe(executable="C:/Program Files/ffmpeg/bin/ffmpeg.exe", source = song_path, method='fallback')
+            else:
+                source = await discord.FFmpegOpusAudio.from_probe(executable="ffmpeg", source = song_path, method='fallback')
+            VC.play(source)
+
 
         print('Message from {0.author}: {0.content}'.format(message))
         secret_passphrase = "wah"
         if message.content == secret_passphrase:# and message.author.id == 224020595103236096:
-
             await message.channel.send("no u")
-            '''
-            atts = 0
-            embs = 0
-
-            async for msg in message.channel.history(limit=1000):
-                atts += len(msg.attachments)
-                embs += len(msg.embeds)
-                print("Attachments ({}), Embeds({})".format(len(msg.attachments), len(msg.embeds)))
-                for embed in msg.embeds:
-                    print(embed.url)
-                for att in msg.attachments:
-                    print(att.url)
-                    download_image(att.url,str(message.channel.id),str(msg.id))
-            print("Attachments ({}), Embeds({})".format(atts, embs))
-            '''
