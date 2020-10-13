@@ -29,7 +29,7 @@ git fetch --all
 
 7. Merge feature branch
 ```sh
-git checkout master
+git checkout main
 git merge --no-ff [FEATURE_NAME]
 ```
 
@@ -47,7 +47,7 @@ git merge --no-ff [FEATURE_NAME]
 
 9. Push to GitHub
 ```sh
-git push origin master
+git push origin main
 ```
 
 ---
@@ -69,12 +69,12 @@ git commit -m "feat: [feature description]"
 
 4. Pull even more recent changes
 ```sh
-git pull origin master
+git pull origin main
 ```
 
 5. Push to GitHub
 ```sh
-git push origin master
+git push origin main
 ```
 
 6. If conflicts:
@@ -90,6 +90,6 @@ git push origin master
     3. Delete the `<<<`, `===`, and `>>>` lines
     4. Push again
     ```sh
-    git push origin master
+    git push origin main
     ```
 
