@@ -135,4 +135,4 @@ dmypy.json
 
 ########### OUR STUFF ###############
 
-auth/
+**/auth/

@@ -4,12 +4,13 @@ from spotipy.oauth2 import SpotifyOAuth
 import json
 import re
 
+#Relative path to this file
+PREFIX_PATH = re.compile("(.*)/[^/]*").match("./"+__file__).group(1)+"/"
 
 class spotifyConnection:
 
-	def __init__(this, ID_PATH = "auth/id", SECRET_PATH = "auth/secret", URI_PATH = "auth/uri"):
-
-		this.playlist = None
+	#Constructor
+	def __init__(this, ID_PATH = PREFIX_PATH+"auth/id", SECRET_PATH = PREFIX_PATH+"auth/secret", URI_PATH = PREFIX_PATH+"auth/uri"):
 
 		#Load ID
 		try:
@@ -41,11 +42,14 @@ class spotifyConnection:
 		#Connect
 		this.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=this.uri, client_id=this.id, client_secret=this.secret))
 
+	#Returns a JSON object of the search results
 	def loadPlaylist(this, playlist):
 
+		#Check if playlist url is a link format
 		urlRegexString = "^[a-z]*://open.spotify.com/playlist/([^?]*)?.*$"
 		urlSearch = re.compile(urlRegexString).match(playlist)
 
+		#Check if playlist url is a URI format
 		uriRegexString = "^spotify:playlist:(.*)$"
 		uriSearch = re.compile(uriRegexString).match(playlist)
 
@@ -56,13 +60,11 @@ class spotifyConnection:
 		else:
 			raise Exception("Invalid playlist",playlist)
 
-		queryResults = this.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')
+		#query spotify
+		return this.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')["items"]
 
-		this.playlist = queryResults["items"]
-
-
-	def printPlaylist(this):
-		for song in this.playlist:
+	def printPlaylist(this, playlist):
+		for song in playlist:
 			print(song["track"]["name"]," - ",song["track"]["album"]["name"]," - ",song["track"]["artists"][0]["name"])
 
 
@@ -70,5 +72,5 @@ class spotifyConnection:
 
 
 test = spotifyConnection()
-test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?si=okRaEV_wTnqJnMbmQEBrXA")
-test.printPlaylist()
+q = test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?si=okRaEV_wTnqJnMbmQEBrXA")
+test.printPlaylist(q)
