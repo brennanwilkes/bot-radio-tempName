@@ -19,24 +19,33 @@ def token():
 
 
 class MyClient(discord.Client):
-    myConn = ""
+    spotC = ""
     playlist = ""
-
+    commandChar = "."
 
     def makePlaylist(self, url):
-        spotC = spot.spotifyConnection()
-        self.playlist = playlist.playlist(spotC.loadPlaylist(url))
+        self.spotC = spot.spotifyConnection()
+        self.playlist = playlist.playlist(self.spotC.loadPlaylist(url))
 
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
 
-
     async def on_message(self, message):
-        if message.content == ".queue":
-            await message.channel.send('\n'.join([s.name for s in self.playlist.songs]))
-        if message.content[:len(".play")] == ".play":
-            self.makePlaylist(message.content.split(" ")[1])
-        #git commit -m "feat: added 'play' and 'queue' commands, to load playlist from a URI and display the playlist, respectively"
+        if not message.content[0] == self.commandChar:
+            return
+        
+        args = message.content.split(" ")
+
+        if args[0] == ".queue":
+            if not playlist:
+                await message.channel.send("Error! Playlist is empty")
+            else:
+                await message.channel.send('\n'.join([s.name for s in self.playlist.songs]))
+        elif args[0] == ".play":
+            self.makePlaylist(args[1])
+        
+            #self.joinVC
+
         print('Message from {0.author}: {0.content}'.format(message))
         secret_passphrase = "wah"
         if message.content == secret_passphrase:# and message.author.id == 224020595103236096:
