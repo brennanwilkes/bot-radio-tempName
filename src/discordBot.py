@@ -28,10 +28,6 @@ class MyClient(discord.Client):
 	VC = None
 	currentSong = None
 
-	def makePlaylist(self, url):
-		self.playlist = playlist.playlist(self.spotC.loadPlaylist(url))
-		random.shuffle(self.playlist.songs)
-
 	'''
 	#not implemented yet
 	async def leave(self):
@@ -43,13 +39,15 @@ class MyClient(discord.Client):
 
 	async def playNextSong(self,error):
 
+		if(len(self.playlist.songs)==0):
+			print("Empty playlist")
+			return
+
 		self.currentSong = self.playlist.songs.pop(0)
 		songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
 
 		self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-
-		for i in range(min(len(self.playlist.songs),3)):
-			self.playlist.songs[i].downloadAudio(override=False,debug=True)
+		self.playlist.downloadNextSongs(3)
 
 
 	async def on_ready(self):
@@ -64,35 +62,39 @@ class MyClient(discord.Client):
 		return source
 
 	async def on_message(self, message):
+
+		secret_passphrase = "wah"
+		if message.content == secret_passphrase:# and message.author.id == 224020595103236096:
+			await message.channel.send("no u")
+
 		if (not len(message.content)) or (not message.content[0] == self.commandChar):
 			return
 
 		args = message.content.split(" ")
 
 		if args[0] == self.commandChar+"queue":
-			if not playlist:
+			if not self.playlist:
 				await message.channel.send("Error! Playlist is empty")
 			else:
 				await message.channel.send('\n'.join([s.name for s in self.playlist.songs]))
 		elif args[0] == self.commandChar+"play":
-			self.makePlaylist(args[1])
-			self.playlist.songs[0].downloadAudio(override=True,debug=True)
 
-			#connect to the voice channel that the person who wrote the message is in
-			self.VC = await message.author.voice.channel.connect()
+			try:
+				self.playlist = playlist.playlist(self.spotC.loadPlaylist(args[1]))
+			except Exception as e:
+				await message.channel.send("Invalid Playlist! AGHHHHH")
+				print(e)
+			else:
+				random.shuffle(self.playlist.songs)
+				self.playlist.downloadNextSongs(1,override=True)
+
+				#connect to the voice channel that the person who wrote the message is in
+				self.VC = await message.author.voice.channel.connect()
+				await self.playNextSong(None)
 			'''
 			#From music bot discord.py example - might need this in the future
 			if ctx.voice_client is not None:
 				return await ctx.voice_client.move_to(channel)
 			'''
 
-			print("before async")
-			await self.playNextSong(None)
-
-
-
-
 		print('Message from {0.author}: {0.content}'.format(message))
-		secret_passphrase = "wah"
-		if message.content == secret_passphrase:# and message.author.id == 224020595103236096:
-			await message.channel.send("no u")

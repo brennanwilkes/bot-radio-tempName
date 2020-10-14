@@ -102,6 +102,10 @@ class playlist:
 
 			if(debug): print("found",song.youtubeID)
 
-	def downloadAllSongs(this,debug=False,override=False):
+	def downloadAllSongs(this,debug=False, override=False):
 		for song in this.songs:
 			song.downloadAudio(debug=debug,override=override)
+
+	def downloadNextSongs(this, num=1, debug=False, override=False):
+		for i in range(min(len(this.songs),num)):
+			this.songs[i].downloadAudio(debug=debug, override=override)
