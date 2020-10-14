@@ -12,9 +12,10 @@ import re
 import spotifyConnection as spot
 import playlist
 import dj
+from googleCloud import googleRadioVoices, googlePrimaryVoices
 
 PREFIX_PATH = sys.path[0]
-DJ_PATH = PREFIX_PATH+"/../audioCache/dj.mp3"
+DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
 
 def token():
 	TOKEN_FILE = PREFIX_PATH+"/auth/discordToken"
@@ -36,6 +37,8 @@ class MyClient(discord.Client):
 	VC = None
 	currentSong = None
 	mode = 1
+	voice = None
+
 
 	'''
 	#not implemented yet
@@ -56,7 +59,7 @@ class MyClient(discord.Client):
 
 		self.mode = 1 - self.mode
 		if(self.mode == 0):
-			self.VC.play(await self.getSongSource(DJ_PATH), after=self.triggerNextSong)
+			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
 			if(firstTime):
 				self.playlist.downloadNextSongs(1,override=True,debug=True)
 		else:
@@ -74,13 +77,14 @@ class MyClient(discord.Client):
 			self.playlist.downloadNextSongs(3,debug=True)
 			self.playlist.updateNextSongsGenres(3,debug=True,sp=self.spotC)
 
-			dj.writeDJAudio(DJ_PATH,pastSong=self.currentSong,playlist=self.playlist,debug=True)
+			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,debug=True)
 
 
 
 
 	async def on_ready(self):
 		self.spotC = spot.spotifyConnection()
+		self.voice = random.choice(googlePrimaryVoices)
 		print('Logged on as {0}!'.format(self.user))
 
 
@@ -110,7 +114,6 @@ class MyClient(discord.Client):
 			else:
 				await message.channel.send("Currently playing: "+self.currentSong.name+"\n"+'\n'.join([s.name for s in self.playlist.songs]))
 		elif args[0] == self.commandChar+"play":
-
 			try:
 				self.playlist = playlist.playlist(self.spotC.loadPlaylist(args[1]))
 			except Exception as e:
@@ -118,7 +121,7 @@ class MyClient(discord.Client):
 				print(e)
 			else:
 				random.shuffle(self.playlist.songs)
-				dj.writeDJAudio(DJ_PATH,text=dj.getWelcomeText(self.playlist),debug=True)
+				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),debug=True)
 
 				#connect to the voice channel that the person who wrote the message is in
 				self.VC = await message.author.voice.channel.connect()

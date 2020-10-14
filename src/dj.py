@@ -4,6 +4,7 @@ import re
 import random
 from dateutil import parser
 from datetime import datetime
+from googleCloud import writeGoogleAudio
 
 templateDJTexts = [
 	"You're listening to GCS radio. Next up, SONG_NAME, by SONG_ARTIST.",
@@ -80,7 +81,7 @@ def getWelcomeText(playlist):
 	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+playlist.songs[0].artists[0]+". Enjoy."
 
 
-def writeDJAudio(fn,pastSong=None,playlist=None,text=None,debug=False):
+def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,debug=False):
 	if(pastSong==None and text==None) or (pastSong!=None and text!=None):
 		raise Exception("Please provide either song or text")
 
@@ -92,8 +93,9 @@ def writeDJAudio(fn,pastSong=None,playlist=None,text=None,debug=False):
 	if(pastSong):
 		text = generateDJText(pastSong,playlist)
 
-	tts = gTTS(text)
-	tts.save(fn)
-	speech = AudioSegment.from_mp3(fn)
-	speech = speech + 5
-	speech.export(fn, format="mp3")
+	writeGoogleAudio(voice,fn,text)
+	#tts = gTTS(text)
+	#tts.save(fn)
+	#speech = AudioSegment.from_mp3(fn)
+	#speech = speech + 5
+	#speech.export(fn, format="mp3")

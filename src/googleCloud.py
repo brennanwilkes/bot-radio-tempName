@@ -89,28 +89,28 @@ en-US    | en-US-Wavenet-I          | MALE     | 24,000 Hz
 en-US    | en-US-Wavenet-J          | MALE     | 24,000 Hz
 
 Good ones for radio:
-	en-US-Wavenet-B
-	en-US-Wavenet-D
-	en-IN-Wavenet-C
-	ar-XA-Wavenet-C
-	da-DK-Wavenet-C
-	en-AU-Wavenet-B
-	en-AU-Wavenet-C
-	en-GB-Wavenet-F
-	en-GB-Wavenet-B
-	en-GB-Wavenet-D
-	fr-CA-Wavenet-B
-	fr-CA-Wavenet-D
-	fr-FR-Wavenet-B
-	it-IT-Wavenet-D
-	nb-NO-Wavenet-D
-	pl-PL-Wavenet-E
-	sv-SE-Wavenet-A
-	vi-VN-Wavenet-D
-	tr-TR-Wavenet-E
-	ja-JP-Wavenet-D
-	ja-JP-Wavenet-D
-	ko-KR-Wavenet-B
+		"en-US-Wavenet-B",
+		"en-US-Wavenet-D",
+		"en-IN-Wavenet-C",
+		"ar-XA-Wavenet-C",
+		"da-DK-Wavenet-C",
+		"en-AU-Wavenet-B",
+		"en-AU-Wavenet-C",
+		"en-GB-Wavenet-F",
+		"en-GB-Wavenet-B",
+		"en-GB-Wavenet-D",
+		"fr-CA-Wavenet-B",
+		"fr-CA-Wavenet-D",
+		"fr-FR-Wavenet-B",
+		"it-IT-Wavenet-D",
+		"nb-NO-Wavenet-D",
+		"pl-PL-Wavenet-E",
+		"sv-SE-Wavenet-A",
+		"vi-VN-Wavenet-D",
+		"tr-TR-Wavenet-E",
+		"ja-JP-Wavenet-D",
+		"ja-JP-Wavenet-D",
+		"ko-KR-Wavenet-B",
 '''
 def writeGoogleAudio(voice_name, fn, text):
 
@@ -132,3 +132,28 @@ def writeGoogleAudio(voice_name, fn, text):
 	with open(filename, 'wb') as out:
 		out.write(response.audio_content)
 		print(f'Audio content written to "{filename}"')
+
+googleRadioVoices = [
+	"en-US-Wavenet-B",
+	"en-US-Wavenet-D",
+	"en-IN-Wavenet-C",
+	"en-AU-Wavenet-B",
+	"en-AU-Wavenet-C",
+	"en-GB-Wavenet-F",
+	"en-GB-Wavenet-B",
+	"en-GB-Wavenet-D",
+	"ar-XA-Wavenet-C",
+	"da-DK-Wavenet-C",
+	"fr-CA-Wavenet-B",
+	"fr-CA-Wavenet-D",
+	"fr-FR-Wavenet-B",
+	"it-IT-Wavenet-D",
+	"nb-NO-Wavenet-D",
+	"pl-PL-Wavenet-E",
+	"sv-SE-Wavenet-A",
+	"vi-VN-Wavenet-D",
+	"tr-TR-Wavenet-E",
+	"ja-JP-Wavenet-D",
+	"ja-JP-Wavenet-D",
+	"ko-KR-Wavenet-B"]
+googlePrimaryVoices = googleRadioVoices[:8]
