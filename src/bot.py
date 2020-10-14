@@ -1,7 +1,7 @@
 import re
 from importlib import util
 import json
-import sys
+import sys, os
 
 
 #Relative path to this file
@@ -17,6 +17,9 @@ def importSrcFile(fn):
 	spec.loader.exec_module(getModule)
 	return getModule
 
+#check for audioCache dir
+if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
+	os.mkdir(PREFIX_PATH+"/../audioCache")
 
 #Import spotifyConnection object
 spotifyConnection = importSrcFile("spotifyConnection.py").spotifyConnection
