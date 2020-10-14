@@ -7,7 +7,7 @@ import glob
 import json
 import asyncio
 import re
-
+from gtts import gTTS
 
 #may need to fix later
 import spotifyConnection as spot
@@ -28,12 +28,19 @@ class MyClient(discord.Client):
 	commandChar = "$"
 	VC = None
 	currentSong = None
+	mode = 1
 
 	'''
 	#not implemented yet
 	async def leave(self):
 		await self.voice_client.disconnect()
 	'''
+
+	def generateNextDJPhrase(self):
+		radioSay = "You're listening to GCS discord radio. Next up, "+self.playlist.songs[0].name+" by "+self.playlist.songs[0].artists[0]
+
+		tts = gTTS(radioSay)
+		tts.save(PREFIX_PATH+"/../audioCache/dj.mp3")
 
 	def triggerNextSong(self,error):
 		asyncLoop = asyncio.run(self.playNextSong(error))
@@ -44,11 +51,18 @@ class MyClient(discord.Client):
 			print("Empty playlist")
 			return
 
-		self.currentSong = self.playlist.songs.pop(0)
-		songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
+		self.mode = 1 - self.mode
+		if(self.mode == 0):
+			self.VC.play(await self.getSongSource(PREFIX_PATH+"/../audioCache/dj.mp3"), after=self.triggerNextSong)
+		else:
+			self.currentSong = self.playlist.songs.pop(0)
+			songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
 
-		self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-		self.playlist.downloadNextSongs(3)
+			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
+			self.playlist.downloadNextSongs(3)
+			self.generateNextDJPhrase()
+
+
 
 
 	async def on_ready(self):
@@ -60,6 +74,7 @@ class MyClient(discord.Client):
 			source = await discord.FFmpegOpusAudio.from_probe(executable="C:/Program Files/ffmpeg/bin/ffmpeg.exe", source = fn, method='fallback')
 		else:
 			source = await discord.FFmpegOpusAudio.from_probe(executable="ffmpeg", source = fn, method='fallback')
+		print("returning source")
 		return source
 
 	async def on_message(self, message):
@@ -89,6 +104,7 @@ class MyClient(discord.Client):
 				print(e)
 			else:
 				random.shuffle(self.playlist.songs)
+				self.generateNextDJPhrase()
 				self.playlist.downloadNextSongs(1,override=True)
 
 				#connect to the voice channel that the person who wrote the message is in

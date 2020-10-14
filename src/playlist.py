@@ -52,11 +52,9 @@ class song:
 		if(this.youtubeID == None):
 			this.youtubeID = this.getYoutubeSearch()
 
-
 		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".part")):
 			if(debug): print("File exists! Skipping")
 			return
-
 
 		ydl_opts = {
 			"format": "bestaudio/best",
