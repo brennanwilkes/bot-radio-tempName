@@ -46,7 +46,7 @@ class MyClient(discord.Client):
 
 
 	def triggerNextSong(self,error):
-		asyncLoop = asyncio.run(self.playNextSong(error))
+		asyncio.run(self.playNextSong(error))
 
 	async def playNextSong(self,error,firstTime=False):
 
