@@ -4,6 +4,7 @@ import youtube_dl
 from youtube_search import YoutubeSearch
 import os, sys
 import glob
+import dj
 
 
 #Relative path to self file
@@ -21,19 +22,19 @@ class song:
 
 	def __init__(self, songJSON):
 
-		self.album = songJSON["track"]["album"]["name"]
+		self.album = songJSON["album"]["name"]
 
-		self.release = songJSON["track"]["album"]["release_date"]
+		self.release = songJSON["album"]["release_date"]
 
 		self.artists = []
-		for artist in songJSON["track"]["artists"]:
+		for artist in songJSON["artists"]:
 			self.artists.append(artist["name"])
 
-		self.explicit = songJSON["track"]["explicit"]
+		self.explicit = songJSON["explicit"]
 
-		self.name = songJSON["track"]["name"]
+		self.name = songJSON["name"]
 
-		self.duration = songJSON["track"]["duration_ms"]
+		self.duration = songJSON["duration_ms"]
 
 		self.genres = None
 
@@ -111,7 +112,7 @@ class playlist:
 
 		self.songs = []
 		for songJSON in playlistJSON["tracks"]["items"]:
-			self.songs.append(song(songJSON))
+			self.songs.append(song(songJSON["track"]))
 
 	def updateYoutubeIDs(self,debug=False):
 		for song in self.songs:
@@ -121,6 +122,12 @@ class playlist:
 			song.youtubeID = song.getYoutubeSearch()
 
 			if(debug): print("found",song.youtubeID)
+
+	def insertSong(self,newSong,sp,message,voice,fn):
+		self.songs.insert(0,newSong)
+		self.downloadNextSongs(1,debug=True,override=True)
+		self.updateNextSongsGenres(1,debug=True,sp=sp)
+		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,debug=True)
 
 	def downloadAllSongs(self,debug=False, override=False):
 		self.downloadNextSongs(num=len(self.songs),debug=debug,override=override)

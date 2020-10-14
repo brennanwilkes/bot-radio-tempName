@@ -1,10 +1,16 @@
 from gtts import gTTS
 from pydub import AudioSegment
 import re
-import random
+import random, os, sys
+import glob
 from dateutil import parser
 from datetime import datetime
-from googleCloud import writeGoogleAudio
+from googleCloud import writeGoogleAudio, googleRadioVoices, googlePrimaryVoices
+
+
+PREFIX_PATH = sys.path[0]
+AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
+
 
 templateDJTexts = [
 	"You're listening to GCS radio. Next up, SONG_NAME, by SONG_ARTIST.",
@@ -36,7 +42,7 @@ templateDJTexts = [
 	"You'll be getting a healthy serving of SONG_GENRE tonight, but let's start with some SONG_ARTIST",
 	"Next up one of my personal favourites, SONG_NAME",
 	"It's your favourite host bot dot radio dot temp name, broadcasting live on GCS radio",
-	"We're live again in 5. 4. 3, 2, 1",
+	"We're live again in 5. 4. 3. 2. 1.",
 	"Playing the best mix of both PAST_SONG_GENRE and SONG_GENRE, it's GCS radio",
 	"The best SONG_GENRE station on the air, GCS radio live",
 	"The songs you want to hear, when you want to hear them, GCS radio live",
@@ -50,28 +56,24 @@ def comma_separator(seq):
 
 
 def generateDJText(pastSong,playlist):
+	curSong = playlist.songs[0]
+
 	text = random.choice(templateDJTexts)
 	text = re.sub("PAST_SONG_NAME", pastSong.name, text)
 	text = re.sub("PAST_SONG_ARTIST", comma_separator(pastSong.artists), text)
 	text = re.sub("PAST_SONG_ALBUM", pastSong.album, text)
-	#text = re.sub("PAST_SONG_RELEASE", parser.parse(str(pastSong.release)).year, text)
-
-	curSong = playlist.songs[0]
-
-	#print(pastSong.release)
-	#print(parser.parse(str(pastSong.release)).year)
+	text = re.sub("PAST_SONG_RELEASE", str(parser.parse(pastSong.release if (pastSong!=None and len(pastSong.release)>=2) else "2020").year), text)
+	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres if pastSong.genres else ["cool music"]), text)
 
 	text = re.sub("SONG_NAME", curSong.name, text)
 	text = re.sub("SONG_ARTIST", comma_separator(curSong.artists), text)
 	text = re.sub("SONG_ALBUM", curSong.album, text)
-	#text = re.sub("SONG_RELEASE", parser.parse(str(curSong.release)).year, text)
+	text = re.sub("SONG_RELEASE", str(parser.parse(curSong.release if (curSong!=None and len(curSong.release)>=2) else "2020").year), text)
+	text = re.sub("SONG_GENRE", random.choice(curSong.genres if curSong.genres else ["cool music"]), text)
 
 	text = re.sub("PLAYLIST_NAME", playlist.name, text)
 	text = re.sub("PLAYLIST_DESC", playlist.description, text)
 	text = re.sub("PLAYLIST_OWNER", playlist.owner, text)
-
-	text = re.sub("SONG_GENRE", random.choice(curSong.genres if curSong.genres else ["cool music"]), text)
-	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres if pastSong.genres else ["cool music"]), text)
 
 	text = re.sub("TIME", datetime.now().strftime("%I %M %p"), text)
 	text = re.sub("live", "lIve", text)
@@ -79,12 +81,27 @@ def generateDJText(pastSong,playlist):
 	return text
 
 
-
-
-
 def getWelcomeText(playlist):
 	#return "Welcome to GCS radio."
 	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+comma_separator(playlist.songs[0].artists)+". Enjoy."
+
+def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",debug=False):
+
+	reqText1 = "This just in on phone line "+str(random.randint(1, 6))+". This is GCS radio, you're live on air."
+	reqText2 = "My name is "+message.author.nick+". Huge fan! Can you play "+req.name+" please?"
+	reqText3 = "Absolutely "+message.author.nick+". Anything for a fan. Coming up next."
+
+
+	writeDJAudio(AUDIO_CACHE+"req1",voice=voice,text=reqText1,debug=debug)
+	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(googleRadioVoices),text=reqText2,debug=debug)
+	writeDJAudio(AUDIO_CACHE+"req3",voice=voice,text=reqText3,debug=debug)
+
+	req1 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req1"+".*")[0])
+	req2 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req2"+".*")[0])
+	req3 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req3"+".*")[0])
+
+	fullReq = req1 + req2 + req3
+	fullReq.export(fn+".mp3", format="mp3")
 
 
 def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,debug=False):
