@@ -188,8 +188,6 @@ class MyClient(discord.Client):
 					print("Found",req.name)
 					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH)
 
-
-
 				except Exception as e:
 					await message.channel.send("Invalid Request")
 					print("Error",e)
