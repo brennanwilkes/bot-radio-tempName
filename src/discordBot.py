@@ -46,6 +46,15 @@ class MyClient(discord.Client):
 		await self.voice_client.disconnect()
 	'''
 
+	def generateQueueText(self, currentSong, playlistSongs):
+		output = "Now playing:\n"
+		output += currentSong.name + "\t\t" + str(currentSong.duration) + "\n"
+		output += "Up next:\n"
+
+		for song in playlistSongs:
+			output += song.name +"\t\t" + str(song.duration) + "\n"
+		
+		return output
 
 
 	def triggerNextSong(self,error):
@@ -112,7 +121,8 @@ class MyClient(discord.Client):
 			if not self.playlist or not self.currentSong:
 				await message.channel.send("Error! Playlist is empty")
 			else:
-				await message.channel.send("Currently playing: "+self.currentSong.name+"\n"+'\n'.join([s.name for s in self.playlist.songs]))
+				await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
+					
 		elif args[0] == self.commandChar+"play":
 			try:
 				self.playlist = playlist.playlist(self.spotC.loadPlaylist(args[1]))
@@ -140,5 +150,9 @@ class MyClient(discord.Client):
 				if(len(args) > 1):
 					await message.channel.send("Invalid voice "+args[1])
 				await message.channel.send("Avaiable voices: "+"\n"+'\n'.join([v for v in googleRadioVoices]))
+
+		elif args[0] == self.commandChar+"die":
+			await message.channel.send("Thank you for playing wing commander!")
+			sys.exit()
 
 		print('Message from {0.author}: {0.content}'.format(message))
