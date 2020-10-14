@@ -65,7 +65,7 @@ class MyClient(discord.Client):
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
 			self.playlist.downloadNextSongs(3,debug=True)
-			self.playlist.updateNextSongsGenres(3,debug=True,sp=self.con)
+			self.playlist.updateNextSongsGenres(3,debug=True,sp=self.spotC)
 
 			dj.writeDJAudio(DJ_PATH,pastSong=self.currentSong,playlist=self.playlist,debug=True)
 

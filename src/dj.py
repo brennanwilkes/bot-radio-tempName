@@ -35,6 +35,8 @@ def generateDJText(pastSong,playlist):
 	text = re.sub("PLAYLIST_DESC", playlist.description, text)
 	text = re.sub("PLAYLIST_OWNER", playlist.owner, text)
 
+	text = re.sub("SONG_GENRE", random.choice(playlist.songs[0].genres), text)
+	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres), text)
 
 	return text
 

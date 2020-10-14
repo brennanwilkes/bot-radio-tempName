@@ -116,6 +116,6 @@ class playlist:
 		for i in range(min(len(this.songs),num)):
 			this.songs[i].downloadAudio(debug=debug, override=override)
 
-	def downloadNextSongs(this, num=1, sp=None, debug=False, override=False):
+	def updateNextSongsGenres(this, num=1, sp=None, debug=False, override=False):
 		for i in range(min(len(this.songs),num)):
-			this.songs[i].genres = sp.getArtistGenres(this.songs[i].artists[0]):
+			this.songs[i].genres = sp.getArtistGenres(this.songs[i].artists[0])
