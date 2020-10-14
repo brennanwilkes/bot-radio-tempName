@@ -141,4 +141,7 @@ class MyClient(discord.Client):
 					await message.channel.send("Invalid voice "+args[1])
 				await message.channel.send("Avaiable voices: "+"\n"+'\n'.join([v for v in googleRadioVoices]))
 
+		elif args[0] == self.commandChar+"help":
+			await message.channel.send("Commands:\n$help\n$play [playlist]\n$queue\n$voice\n$voice [voice]")
+
 		print('Message from {0.author}: {0.content}'.format(message))
