@@ -87,8 +87,10 @@ def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=Non
 
 	if(text and debug):
 		print("Generating DJ for raw text with ",voice)
-	elif(debug):
+	elif(debug and len(playlist.songs) > 0):
 		print("Generating DJ for song:",pastSong.name,"->",playlist.songs[0].name,"with",voice)
+	else:
+		print("Playlist is empty")
 
 	if(pastSong):
 		text = generateDJText(pastSong,playlist)
