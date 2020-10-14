@@ -154,5 +154,7 @@ class MyClient(discord.Client):
 		elif args[0] == self.commandChar+"die":
 			await message.channel.send("Thank you for playing wing commander!")
 			sys.exit()
+		elif args[0] == self.commandChar+"help":
+			await message.channel.send("Commands:\n$help\n$play [playlist]\n$queue\n$voice\n$voice [voice]")
 
 		print('Message from {0.author}: {0.content}'.format(message))
