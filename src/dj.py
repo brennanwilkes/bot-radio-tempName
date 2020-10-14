@@ -54,17 +54,14 @@ def generateDJText(pastSong,playlist):
 	text = re.sub("PAST_SONG_NAME", pastSong.name, text)
 	text = re.sub("PAST_SONG_ARTIST", comma_separator(pastSong.artists), text)
 	text = re.sub("PAST_SONG_ALBUM", pastSong.album, text)
-	#text = re.sub("PAST_SONG_RELEASE", parser.parse(str(pastSong.release)).year, text)
+	text = re.sub("SONG_RELEASE", parser.parse(str(pastSong.release) if len(str(pastSong.release))>=2 else "2020").year, text)
 
 	curSong = playlist.songs[0]
-
-	#print(pastSong.release)
-	#print(parser.parse(str(pastSong.release)).year)
 
 	text = re.sub("SONG_NAME", curSong.name, text)
 	text = re.sub("SONG_ARTIST", comma_separator(curSong.artists), text)
 	text = re.sub("SONG_ALBUM", curSong.album, text)
-	#text = re.sub("SONG_RELEASE", parser.parse(str(curSong.release)).year, text)
+	text = re.sub("SONG_RELEASE", parser.parse(str(curSong.release) if len(str(curSong.release))>=2 else "2020").year, text)
 
 	text = re.sub("PLAYLIST_NAME", playlist.name, text)
 	text = re.sub("PLAYLIST_DESC", playlist.description, text)
