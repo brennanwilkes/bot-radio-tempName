@@ -50,6 +50,8 @@ class song:
 		search += " audio"
 		query = YoutubeSearch(search, max_results=1).to_dict()
 
+		if(query == None or len(query) < 1):
+			return "CANNOT_FIND_SONG"
 		return query[0]["id"]
 
 	def downloadAudio(self,override=False,debug=False):
