@@ -104,7 +104,7 @@ class MyClient(discord.Client):
 			self.currentSong = self.playlist.songs.pop(0)
 			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 			if(len(songGlobs) < 1):
-				self.currentSong.downloadAudio(debug=debug, override=override)
+				self.currentSong.downloadAudio(debug=True, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			songURL = songGlobs[0]
