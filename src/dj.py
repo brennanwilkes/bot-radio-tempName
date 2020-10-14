@@ -67,7 +67,7 @@ def generateDJText(pastSong,playlist):
 	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres if pastSong.genres else ["cool music"]), text)
 
 	text = re.sub("TIME", datetime.now().strftime("%I %M %p"), text)
-	
+	text = re.sub("live", "lIve", text)
 
 	return text
 
