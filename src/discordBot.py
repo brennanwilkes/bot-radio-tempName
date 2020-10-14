@@ -157,16 +157,12 @@ class MyClient(discord.Client):
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),debug=True)
 
 				#connect to the voice channel that the person who wrote the message is in
-				if self.VC:
+				if self.VC and (not self.VC == message.author.voice.channel):
 					await self.VC.disconnect()
 				self.VC = await message.author.voice.channel.connect()
 				
 				await self.playNextSong(None,firstTime=True)
-			'''
-			#From music bot discord.py example - might need this in the future
-			if ctx.voice_client is not None:
-				return await ctx.voice_client.move_to(channel)
-			'''
+
 		elif args[0] == self.commandChar+"voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
 				self.voice = args[1]
@@ -175,6 +171,7 @@ class MyClient(discord.Client):
 				if(len(args) > 1):
 					await message.channel.send("Invalid voice "+args[1])
 				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+				
 		elif args[0] == self.commandChar+"die":
 			await self.VC.disconnect()
 			await message.channel.send("Thank you for playing wing commander!")
@@ -186,6 +183,6 @@ class MyClient(discord.Client):
 			$play [playlist]
 			$queue
 			$voice
-			$voice [voice]```")```''')
+			$voice [voice]```''')
 
 		print('Message from {0.author}: {0.content}'.format(message))
