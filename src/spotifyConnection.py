@@ -73,6 +73,10 @@ class spotifyConnection:
 		album = self.con.album(track["album"]["external_urls"]["spotify"])
 		return album["genres"] + artist["genres"]
 
+	def getSong(self, query):
+		result = self.con.search(query)
+		return result["tracks"]["items"][0]
+
 	#Debug
 	def printPlaylist(self, playlist):
 		for song in playlist:
