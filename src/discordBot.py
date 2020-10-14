@@ -4,6 +4,9 @@ import requests
 import shutil
 import os, sys, random
 import glob
+import json
+import asyncio
+
 
 #may need to fix later
 import spotifyConnection as spot
@@ -18,11 +21,12 @@ def token():
 	token = fname.read()
 	return token
 
-
 class MyClient(discord.Client):
 	spotC = None
 	playlist = None
-	commandChar = "."
+	commandChar = "$"
+	VC = None
+	currentSong = None
 
 	def makePlaylist(self, url):
 		self.playlist = playlist.playlist(self.spotC.loadPlaylist(url))
@@ -33,6 +37,20 @@ class MyClient(discord.Client):
 	async def leave(self):
 		await self.voice_client.disconnect()
 	'''
+
+	def triggerNextSong(self,error):
+		asyncLoop = asyncio.run(self.playNextSong(error))
+
+	async def playNextSong(self,error):
+
+		self.currentSong = self.playlist.songs.pop(0)
+		songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
+
+		self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
+
+		for i in range(min(len(self.playlist.songs),3)):
+			self.playlist.songs[i].downloadAudio(override=False,debug=True)
+
 
 	async def on_ready(self):
 		self.spotC = spot.spotifyConnection()
@@ -51,27 +69,27 @@ class MyClient(discord.Client):
 
 		args = message.content.split(" ")
 
-		if args[0] == ".queue":
+		if args[0] == self.commandChar+"queue":
 			if not playlist:
 				await message.channel.send("Error! Playlist is empty")
 			else:
 				await message.channel.send('\n'.join([s.name for s in self.playlist.songs]))
-		elif args[0] == ".play":
+		elif args[0] == self.commandChar+"play":
 			self.makePlaylist(args[1])
-
 			self.playlist.songs[0].downloadAudio(override=True,debug=True)
 
 			#connect to the voice channel that the person who wrote the message is in
-			VC = await message.author.voice.channel.connect()
+			self.VC = await message.author.voice.channel.connect()
 			'''
 			#From music bot discord.py example - might need this in the future
 			if ctx.voice_client is not None:
 				return await ctx.voice_client.move_to(channel)
 			'''
 
-			print("Playing",self.playlist.songs[0].name)
+			print("before async")
+			await self.playNextSong(None)
 
-			VC.play(await self.getSongSource(glob.glob(PREFIX_PATH+"/../audioCache/"+self.playlist.songs[0].youtubeID+".*")[0]))
+
 
 
 		print('Message from {0.author}: {0.content}'.format(message))
