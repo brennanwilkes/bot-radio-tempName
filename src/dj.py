@@ -45,18 +45,24 @@ templateDJTexts = [
 	"One of my personal favourites, PAST_SONG_NAME, great tune."
 ]
 
+def comma_separator(seq):
+	return ' and '.join([', '.join(seq[:-1]), seq[-1]] if len(seq) > 2 else seq)
+
 
 def generateDJText(pastSong,playlist):
 	text = random.choice(templateDJTexts)
 	text = re.sub("PAST_SONG_NAME", pastSong.name, text)
-	text = re.sub("PAST_SONG_ARTIST", pastSong.artists[0], text)
+	text = re.sub("PAST_SONG_ARTIST", comma_separator(pastSong.artists), text)
 	text = re.sub("PAST_SONG_ALBUM", pastSong.album, text)
 	#text = re.sub("PAST_SONG_RELEASE", parser.parse(str(pastSong.release)).year, text)
 
 	curSong = playlist.songs[0]
 
+	#print(pastSong.release)
+	#print(parser.parse(str(pastSong.release)).year)
+
 	text = re.sub("SONG_NAME", curSong.name, text)
-	text = re.sub("SONG_ARTIST", curSong.artists[0], text)
+	text = re.sub("SONG_ARTIST", comma_separator(curSong.artists), text)
 	text = re.sub("SONG_ALBUM", curSong.album, text)
 	#text = re.sub("SONG_RELEASE", parser.parse(str(curSong.release)).year, text)
 
@@ -78,7 +84,7 @@ def generateDJText(pastSong,playlist):
 
 def getWelcomeText(playlist):
 	#return "Welcome to GCS radio."
-	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+playlist.songs[0].artists[0]+". Enjoy."
+	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+comma_separator(playlist.songs[0].artists)+". Enjoy."
 
 
 def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,debug=False):
@@ -87,8 +93,10 @@ def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=Non
 
 	if(text and debug):
 		print("Generating DJ for raw text with ",voice)
-	elif(debug):
+	elif(debug and len(playlist.songs) > 0):
 		print("Generating DJ for song:",pastSong.name,"->",playlist.songs[0].name,"with",voice)
+	else:
+		print("Playlist is empty")
 
 	if(pastSong):
 		text = generateDJText(pastSong,playlist)
