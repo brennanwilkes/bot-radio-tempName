@@ -23,6 +23,8 @@ class song:
 
 		this.album = songJSON["track"]["album"]["name"]
 
+		this.release = songJSON["track"]["album"]["release_date"]
+
 		this.artists = []
 		for artist in songJSON["track"]["artists"]:
 			this.artists.append(artist["name"])
@@ -32,6 +34,8 @@ class song:
 		this.name = songJSON["track"]["name"]
 
 		this.duration = songJSON["track"]["duration_ms"]
+
+		this.genres = None
 
 
 	def compSongByDuration(this, songYoutbeJSON):
@@ -43,6 +47,7 @@ class song:
 		search = this.name + " by "
 		for a in this.artists:
 			search += a
+		search += " audio"
 		query = YoutubeSearch(search, max_results=1).to_dict()
 
 		return query[0]["id"]
@@ -110,3 +115,7 @@ class playlist:
 	def downloadNextSongs(this, num=1, debug=False, override=False):
 		for i in range(min(len(this.songs),num)):
 			this.songs[i].downloadAudio(debug=debug, override=override)
+
+	def downloadNextSongs(this, num=1, sp=None, debug=False, override=False):
+		for i in range(min(len(this.songs),num)):
+			this.songs[i].genres = sp.getArtistGenres(this.songs[i].artists[0]):

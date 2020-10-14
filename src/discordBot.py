@@ -65,6 +65,8 @@ class MyClient(discord.Client):
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
 			self.playlist.downloadNextSongs(3,debug=True)
+			self.playlist.updateNextSongsGenres(3,debug=True,sp=self.con)
+
 			dj.writeDJAudio(DJ_PATH,pastSong=self.currentSong,playlist=self.playlist,debug=True)
 
 
@@ -99,7 +101,7 @@ class MyClient(discord.Client):
 			if not self.playlist or not self.currentSong:
 				await message.channel.send("Error! Playlist is empty")
 			else:
-				await message.channel.send(self.currentSong.name+"\n"+'\n'.join([s.name for s in self.playlist.songs]))
+				await message.channel.send("Currently playing: "+self.currentSong.name+"\n"+'\n'.join([s.name for s in self.playlist.songs]))
 		elif args[0] == self.commandChar+"play":
 
 			try:
