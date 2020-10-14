@@ -18,9 +18,16 @@ DJ_PATH = PREFIX_PATH+"/../audioCache/dj.mp3"
 
 def token():
 	TOKEN_FILE = PREFIX_PATH+"/auth/discordToken"
-	fname = open(TOKEN_FILE)
-	token = fname.read()
-	return token
+
+	#Load Discord bot token
+	try:
+		fname = open(TOKEN_FILE, "r")
+		token = fname.read()
+	except IOError:
+		raise Exception("Please create file "+ TOKEN_FILE)
+	else:
+		fname.close()
+		return token
 
 class MyClient(discord.Client):
 	spotC = None
@@ -39,7 +46,7 @@ class MyClient(discord.Client):
 
 
 	def triggerNextSong(self,error):
-		asyncLoop = asyncio.run(self.playNextSong(error))
+		asyncio.run(self.playNextSong(error))
 
 	async def playNextSong(self,error,firstTime=False):
 
