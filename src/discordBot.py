@@ -46,14 +46,36 @@ class MyClient(discord.Client):
 		await self.voice_client.disconnect()
 	'''
 
+	def format_time_string(self, duration_ms):
+		sec_tot = int(duration_ms/1000)
+		mins_tot = sec_tot // 60
+		
+		secs = sec_tot % 60
+		mins = mins_tot % 60
+		hrs = mins_tot // 60
+		
+
+		if hrs > 0:
+			return "{a:2d}:{b:02d}:{c:02d}".format(a=hrs,b=mins,c=secs)
+		else:
+			return "  {b:2d}:{c:02d}".format(a=hrs,b=mins,c=secs)
+
+
 	def generateQueueText(self, currentSong, playlistSongs):
-		output = "Now playing:\n"
-		output += currentSong.name + "\t\t" + str(currentSong.duration) + "\n"
+		LINE_LENGTH = 50
+		i=1
+		output = "```Now playing:\n"
+		output += " 1. "+ currentSong.name + " "*(LINE_LENGTH-len(currentSong.name)) + self.format_time_string(currentSong.duration) + "\n"
 		output += "Up next:\n"
 
 		for song in playlistSongs:
-			output += song.name +"\t\t" + str(song.duration) + "\n"
+			i+=1
+			sn = song.name
+			if len(song.name) > LINE_LENGTH: #truncate song name if it exceeds the line length
+				sn = song.name[0:LINE_LENGTH-3]+ "..."
+			output += "{a:2d}. ".format(a=i) + sn + " "*(LINE_LENGTH-len(sn)) + self.format_time_string(song.duration) + "\n"
 		
+		output += "```"
 		return output
 
 
