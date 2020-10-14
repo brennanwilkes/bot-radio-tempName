@@ -30,33 +30,3 @@ song = importData.song
 discordClient = importSrcFile("discordBot.py")
 BotClient = discordClient.MyClient()
 BotClient.run(discordClient.token())
-
-
-
-
-test = spotifyConnection()
-q = test.loadPlaylist("https://open.spotify.com/playlist/0NkBcnxyLMeUXKXww80lFV?si=okRaEV_wTnqJnMbmQEBrXA")
-
-p = playlist(q)
-
-BotClient.playlist = p
-
-print(p.name)
-print(p.owner)
-
-for s in p.songs:
-	s.downloadAudio()
-
-
-
-#print(p.name)
-#print(p.owner)
-
-
-
-#print(json.dumps(p.songs[0].getYoutubeSearch(),indent=4))
-
-#print(p.songs[0].duration)
-
-#print(json.dumps(q["tracks"]["items"][0], indent=4))
-#test.printPlaylist(q)
