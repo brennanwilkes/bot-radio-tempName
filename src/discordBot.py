@@ -18,9 +18,16 @@ PREFIX_PATH = sys.path[0]
 
 def token():
 	TOKEN_FILE = PREFIX_PATH+"/auth/discordToken"
-	fname = open(TOKEN_FILE)
-	token = fname.read()
-	return token
+
+	#Load Discord bot token
+	try:
+		fname = open(TOKEN_FILE, "r")
+		token = fname.read()
+	except IOError:
+		raise Exception("Please create file "+ TOKEN_FILE)
+	else:
+		fname.close()
+		return token
 
 class MyClient(discord.Client):
 	spotC = None
