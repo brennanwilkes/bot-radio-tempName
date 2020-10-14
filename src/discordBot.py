@@ -75,6 +75,8 @@ class MyClient(discord.Client):
 				sn = song.name[0:LINE_LENGTH-3]+ "..."
 			output += "{a:2d}. ".format(a=i) + sn + " "*(LINE_LENGTH-len(sn)) + self.format_time_string(song.duration) + "\n"
 
+		if len(output)> 2000: #max discord msg length
+			output = output[0:1990]+ "\n ... \n"
 		output += "```"
 		return output
 
@@ -104,7 +106,7 @@ class MyClient(discord.Client):
 			self.currentSong = self.playlist.songs.pop(0)
 			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 			if(len(songGlobs) < 1):
-				self.currentSong.downloadAudio(debug=debug, override=override)
+				self.currentSong.downloadAudio(debug=True, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			songURL = songGlobs[0]
