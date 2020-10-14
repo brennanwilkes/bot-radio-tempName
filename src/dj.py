@@ -36,7 +36,7 @@ templateDJTexts = [
 	"You'll be getting a healthy serving of SONG_GENRE tonight, but let's start with some SONG_ARTIST",
 	"Next up one of my personal favourites, SONG_NAME",
 	"It's your favourite host bot dot radio dot temp name, broadcasting live on GCS radio",
-	"We're live again in 5. 4. 3, 2, 1",
+	"We're live again in 5. 4. 3. 2. 1.",
 	"Playing the best mix of both PAST_SONG_GENRE and SONG_GENRE, it's GCS radio",
 	"The best SONG_GENRE station on the air, GCS radio live",
 	"The songs you want to hear, when you want to hear them, GCS radio live",
@@ -50,25 +50,24 @@ def comma_separator(seq):
 
 
 def generateDJText(pastSong,playlist):
+	curSong = playlist.songs[0]
+
 	text = random.choice(templateDJTexts)
 	text = re.sub("PAST_SONG_NAME", pastSong.name, text)
 	text = re.sub("PAST_SONG_ARTIST", comma_separator(pastSong.artists), text)
 	text = re.sub("PAST_SONG_ALBUM", pastSong.album, text)
-	text = re.sub("SONG_RELEASE", parser.parse(str(pastSong.release) if len(str(pastSong.release))>=2 else "2020").year, text)
-
-	curSong = playlist.songs[0]
+	text = re.sub("PAST_SONG_RELEASE", str(parser.parse(pastSong.release if (pastSong!=None and len(pastSong.release)>=2) else "2020").year), text)
+	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres if pastSong.genres else ["cool music"]), text)
 
 	text = re.sub("SONG_NAME", curSong.name, text)
 	text = re.sub("SONG_ARTIST", comma_separator(curSong.artists), text)
 	text = re.sub("SONG_ALBUM", curSong.album, text)
-	text = re.sub("SONG_RELEASE", parser.parse(str(curSong.release) if len(str(curSong.release))>=2 else "2020").year, text)
+	text = re.sub("SONG_RELEASE", str(parser.parse(curSong.release if (curSong!=None and len(curSong.release)>=2) else "2020").year), text)
+	text = re.sub("SONG_GENRE", random.choice(curSong.genres if curSong.genres else ["cool music"]), text)
 
 	text = re.sub("PLAYLIST_NAME", playlist.name, text)
 	text = re.sub("PLAYLIST_DESC", playlist.description, text)
 	text = re.sub("PLAYLIST_OWNER", playlist.owner, text)
-
-	text = re.sub("SONG_GENRE", random.choice(curSong.genres if curSong.genres else ["cool music"]), text)
-	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres if pastSong.genres else ["cool music"]), text)
 
 	text = re.sub("TIME", datetime.now().strftime("%I %M %p"), text)
 	text = re.sub("live", "lIve", text)
