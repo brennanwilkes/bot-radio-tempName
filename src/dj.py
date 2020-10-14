@@ -75,12 +75,12 @@ def generateDJText(pastSong,playlist):
 	return text
 
 
-
-
-
 def getWelcomeText(playlist):
 	#return "Welcome to GCS radio."
 	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+comma_separator(playlist.songs[0].artists)+". Enjoy."
+
+def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",debug=False):
+	writeDJAudio(fn,voice=voice,text="SONG REQUEST",debug=debug)
 
 
 def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,debug=False):

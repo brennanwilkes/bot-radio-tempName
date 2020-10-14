@@ -71,7 +71,12 @@ class MyClient(discord.Client):
 					os.remove(oldSong)
 
 			self.currentSong = self.playlist.songs.pop(0)
-			songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
+			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
+			if(len(songGlobs) < 1):
+				self.currentSong.downloadAudio(debug=debug, override=override)
+				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
+
+			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
 			self.playlist.downloadNextSongs(3,debug=True)
@@ -141,6 +146,23 @@ class MyClient(discord.Client):
 					await message.channel.send("Invalid voice "+args[1])
 				await message.channel.send("Avaiable voices: "+"\n"+'\n'.join([v for v in googleRadioVoices]))
 
+		elif args[0] == self.commandChar + "request":
+			if(len(args)<2):
+				await message.channel.send("Please type a song name after $request")
+			else:
+				try:
+					print("Requesting"," ".join(args[1:]))
+					req = playlist.song(self.spotC.getSong(" ".join(args[1:])))
+					print("Found",req.name)
+					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH)
+
+
+
+				except Exception as e:
+					await message.channel.send("Invalid Request")
+					print("Error",e)
+				else:
+					pass
 		elif args[0] == self.commandChar+"help":
 			await message.channel.send("Commands:\n$help\n$play [playlist]\n$queue\n$voice\n$voice [voice]")
 
