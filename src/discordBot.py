@@ -6,6 +6,7 @@ import os, sys, random
 import glob
 import json
 import asyncio
+import re
 
 
 #may need to fix later
@@ -66,6 +67,8 @@ class MyClient(discord.Client):
 		secret_passphrase = "wah"
 		if message.content == secret_passphrase:# and message.author.id == 224020595103236096:
 			await message.channel.send("no u")
+		if re.compile("^.*chi[cm][pk]*en run.*$").match(message.content) and message.author.id == 141762886883213312:
+			await message.channel.send("NO CHICKEN RUN CHRIS")
 
 		if (not len(message.content)) or (not message.content[0] == self.commandChar):
 			return
