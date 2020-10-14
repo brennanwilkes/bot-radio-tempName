@@ -7,14 +7,14 @@ import glob
 import json
 import asyncio
 import re
-from gtts import gTTS
 
 #may need to fix later
 import spotifyConnection as spot
 import playlist
+import dj
 
 PREFIX_PATH = sys.path[0]
-
+DJ_PATH = PREFIX_PATH+"/../audioCache/dj.mp3"
 
 def token():
 	TOKEN_FILE = PREFIX_PATH+"/auth/discordToken"
@@ -36,11 +36,7 @@ class MyClient(discord.Client):
 		await self.voice_client.disconnect()
 	'''
 
-	def generateNextDJPhrase(self):
-		radioSay = "You're listening to GCS discord radio. Next up, "+self.playlist.songs[0].name+" by "+self.playlist.songs[0].artists[0]
 
-		tts = gTTS(radioSay)
-		tts.save(PREFIX_PATH+"/../audioCache/dj.mp3")
 
 	def triggerNextSong(self,error):
 		asyncLoop = asyncio.run(self.playNextSong(error))
@@ -53,14 +49,14 @@ class MyClient(discord.Client):
 
 		self.mode = 1 - self.mode
 		if(self.mode == 0):
-			self.VC.play(await self.getSongSource(PREFIX_PATH+"/../audioCache/dj.mp3"), after=self.triggerNextSong)
+			self.VC.play(await self.getSongSource(DJ_PATH), after=self.triggerNextSong)
 		else:
 			self.currentSong = self.playlist.songs.pop(0)
 			songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.downloadNextSongs(3)
-			self.generateNextDJPhrase()
+			self.playlist.downloadNextSongs(3,debug=True)
+			dj.writeDJAudio(DJ_PATH,text="testing",debug=True)
 
 
 
@@ -69,12 +65,12 @@ class MyClient(discord.Client):
 		self.spotC = spot.spotifyConnection()
 		print('Logged on as {0}!'.format(self.user))
 
+
 	async def getSongSource(self,fn):
 		if os.name == 'nt': #windows
 			source = await discord.FFmpegOpusAudio.from_probe(executable="C:/Program Files/ffmpeg/bin/ffmpeg.exe", source = fn, method='fallback')
 		else:
 			source = await discord.FFmpegOpusAudio.from_probe(executable="ffmpeg", source = fn, method='fallback')
-		print("returning source")
 		return source
 
 	async def on_message(self, message):
@@ -104,11 +100,12 @@ class MyClient(discord.Client):
 				print(e)
 			else:
 				random.shuffle(self.playlist.songs)
-				self.generateNextDJPhrase()
-				self.playlist.downloadNextSongs(1,override=True)
+				dj.writeDJAudio(DJ_PATH,text=dj.getWelcomeText(self.playlist),debug=True)
+				self.playlist.downloadNextSongs(1,override=True,debug=True)
 
 				#connect to the voice channel that the person who wrote the message is in
 				self.VC = await message.author.voice.channel.connect()
+
 				await self.playNextSong(None)
 			'''
 			#From music bot discord.py example - might need this in the future
