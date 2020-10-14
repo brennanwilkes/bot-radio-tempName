@@ -19,44 +19,44 @@ class song:
 	duration = 0
 	youtubeID = None
 
-	def __init__(this, songJSON):
+	def __init__(self, songJSON):
 
-		this.album = songJSON["track"]["album"]["name"]
+		self.album = songJSON["track"]["album"]["name"]
 
-		this.artists = []
+		self.artists = []
 		for artist in songJSON["track"]["artists"]:
-			this.artists.append(artist["name"])
+			self.artists.append(artist["name"])
 
-		this.explicit = songJSON["track"]["explicit"]
+		self.explicit = songJSON["track"]["explicit"]
 
-		this.name = songJSON["track"]["name"]
+		self.name = songJSON["track"]["name"]
 
-		this.duration = songJSON["track"]["duration_ms"]
+		self.duration = songJSON["track"]["duration_ms"]
 
 
-	def compSongByDuration(this, songYoutbeJSON):
+	def compSongByDuration(self, songYoutbeJSON):
 		songYoutbeJSON = songYoutbeJSON["duration"].split(":")
 		songYoutbeJSON = (int(songYoutbeJSON[0])*60+int(songYoutbeJSON[1]))*1000
-		return abs(this.duration - songYoutbeJSON)
+		return abs(self.duration - songYoutbeJSON)
 
-	def getYoutubeSearch(this):
-		search = this.name + " by "
-		for a in this.artists:
+	def getYoutubeSearch(self):
+		search = self.name + " by "
+		for a in self.artists:
 			search += a
 		query = YoutubeSearch(search, max_results=1).to_dict()
 
 		return query[0]["id"]
 
-	def downloadAudio(this,override=False,debug=False):
+	def downloadAudio(self,override=False,debug=False):
 
-		if(this.youtubeID == None):
-			this.youtubeID = this.getYoutubeSearch()
+		if(self.youtubeID == None):
+			self.youtubeID = self.getYoutubeSearch()
 
-		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+this.youtubeID+".part")):
-			if(debug): print("File already loaded:",this.name)
+		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".part")):
+			if(debug): print("File already loaded:",self.name)
 			return
 
-		if(debug): print("Loading audio:",this.name)
+		if(debug): print("Loading audio:",self.name)
 
 
 		ydl_opts = {
@@ -66,12 +66,12 @@ class song:
 			"preferredcodec": "mp3",
 			"preferredquality": "192",
 		}],
-			"outtmpl": MAIN_PATH+"/audioCache/"+this.youtubeID+".%(etx)s",
+			"outtmpl": MAIN_PATH+"/audioCache/"+self.youtubeID+".%(etx)s",
 			"quiet": not debug
 		}
 
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-			ydl.download(["https://www.youtube.com/watch?v="+this.youtubeID])  # Download into the current working directory
+			ydl.download(["https://www.youtube.com/watch?v="+self.youtubeID])  # Download into the current working directory
 
 
 class playlist:
@@ -83,30 +83,30 @@ class playlist:
 	owner = ""
 
 
-	def __init__(this, playlistJSON):
+	def __init__(self, playlistJSON):
 
-		this.collaborative = playlistJSON["collaborative"]
-		this.description = playlistJSON["description"]
-		this.name = playlistJSON["name"]
-		this.owner = playlistJSON["owner"]["display_name"]
+		self.collaborative = playlistJSON["collaborative"]
+		self.description = playlistJSON["description"]
+		self.name = playlistJSON["name"]
+		self.owner = playlistJSON["owner"]["display_name"]
 
-		this.songs = []
+		self.songs = []
 		for songJSON in playlistJSON["tracks"]["items"]:
-			this.songs.append(song(songJSON))
+			self.songs.append(song(songJSON))
 
-	def updateYoutubeIDs(this,debug=False):
-		for song in this.songs:
+	def updateYoutubeIDs(self,debug=False):
+		for song in self.songs:
 
 			if(debug): print("searching for",song.name)
 
-			song.youtubeID = song.getYoutubeSearch();
+			song.youtubeID = song.getYoutubeSearch()
 
 			if(debug): print("found",song.youtubeID)
 
-	def downloadAllSongs(this,debug=False, override=False):
-		for song in this.songs:
+	def downloadAllSongs(self,debug=False, override=False):
+		for song in self.songs:
 			song.downloadAudio(debug=debug,override=override)
 
-	def downloadNextSongs(this, num=1, debug=False, override=False):
-		for i in range(min(len(this.songs),num)):
-			this.songs[i].downloadAudio(debug=debug, override=override)
+	def downloadNextSongs(self, num=1, debug=False, override=False):
+		for i in range(min(len(self.songs),num)):
+			self.songs[i].downloadAudio(debug=debug, override=override)

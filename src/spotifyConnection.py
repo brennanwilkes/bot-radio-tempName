@@ -13,12 +13,12 @@ class spotifyConnection:
 	uri = ""
 
 	#Constructor
-	def __init__(this, ID_PATH = PREFIX_PATH+"/auth/id", SECRET_PATH = PREFIX_PATH+"/auth/secret", URI_PATH = PREFIX_PATH+"/auth/uri"):
+	def __init__(self, ID_PATH = PREFIX_PATH+"/auth/id", SECRET_PATH = PREFIX_PATH+"/auth/secret", URI_PATH = PREFIX_PATH+"/auth/uri"):
 
 		#Load ID
 		try:
 			idFile = open(ID_PATH,"r")
-			this.id = idFile.read().strip()
+			self.id = idFile.read().strip()
 		except IOError:
 			raise Exception("Please create file "+ID_PATH)
 		else:
@@ -27,7 +27,7 @@ class spotifyConnection:
 		#Load Secret
 		try:
 			secretFile = open(SECRET_PATH,"r")
-			this.secret = secretFile.read().strip()
+			self.secret = secretFile.read().strip()
 		except IOError:
 			raise Exception("Please create file "+SECRET_PATH)
 		else:
@@ -36,17 +36,17 @@ class spotifyConnection:
 		#Load URI
 		try:
 			uriFile = open(URI_PATH,"r")
-			this.uri = uriFile.read().strip()
+			self.uri = uriFile.read().strip()
 		except IOError:
 			raise Exception("Please create file "+URI_PATH)
 		else:
 			uriFile.close()
 
 		#Connect
-		this.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=this.uri, client_id=this.id, client_secret=this.secret))
+		self.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=self.uri, client_id=self.id, client_secret=self.secret))
 
 	#Returns a JSON object of the search results
-	def loadPlaylist(this, playlist):
+	def loadPlaylist(self, playlist):
 
 		#Check if playlist url is a link format
 		urlRegexString = "^[a-z]*://open.spotify.com/playlist/([^?]*)?.*$"
@@ -64,11 +64,11 @@ class spotifyConnection:
 			raise Exception("Invalid playlist",playlist)
 
 		#query spotify
-		#return this.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')["items"]
+		#return self.con.user_playlist_tracks("", "spotify:playlist:"+playlistID, fields='items,uri,name,id,total', market='fr')["items"]
 
-		return this.con.playlist("spotify:playlist:"+playlistID)
+		return self.con.playlist("spotify:playlist:"+playlistID)
 
 	#Debug
-	def printPlaylist(this, playlist):
+	def printPlaylist(self, playlist):
 		for song in playlist:
 			print(song["track"]["name"]," - ",song["track"]["album"]["name"]," - ",song["track"]["artists"][0]["name"])
