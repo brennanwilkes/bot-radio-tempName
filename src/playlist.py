@@ -59,7 +59,7 @@ class song:
 
 		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".part")):
 			if(debug): print("File already loaded:",self.name)
-			return
+			return True
 
 		if(debug): print("Loading audio:",self.name)
 
@@ -75,8 +75,20 @@ class song:
 			"quiet": not debug
 		}
 
-		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-			ydl.download(["https://www.youtube.com/watch?v="+self.youtubeID])  # Download into the current working directory
+		tries = 0
+		while tries < 5:
+			try:
+				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+					ydl.download(["https://www.youtube.com/watch?v="+self.youtubeID])
+			except Exception:
+				print("failed to load",self.youtubeID)
+				tries += 1
+			else:
+				break
+		if(tries >= 5):
+			print("Could not find youtube source for",self.youtubeID)
+			return False
+		return True
 
 
 class playlist:
@@ -109,13 +121,19 @@ class playlist:
 			if(debug): print("found",song.youtubeID)
 
 	def downloadAllSongs(self,debug=False, override=False):
-		for song in self.songs:
-			song.downloadAudio(debug=debug,override=override)
+		self.downloadNextSongs(num=len(self.songs),debug=debug,override=override)
 
 	def downloadNextSongs(self, num=1, debug=False, override=False):
 		for i in range(min(len(self.songs),num)):
-			self.songs[i].downloadAudio(debug=debug, override=override)
+			if(i >= len(self.songs)):
+				break
+
+			suc = self.songs[i].downloadAudio(debug=debug, override=override)
+			if not suc:
+				self.songs.pop(i)
 
 	def updateNextSongsGenres(self, num=1, sp=None, debug=False, override=False):
 		for i in range(min(len(self.songs),num)):
 			self.songs[i].genres = sp.getArtistGenres(self.songs[i].artists[0])
+			if(len(self.songs[i].genres) == 0):
+				self.songs[i].genres.append("good music")
