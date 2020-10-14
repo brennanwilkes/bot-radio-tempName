@@ -11,7 +11,7 @@ import sys, os
 def googleListLanguages():
 	client = texttospeech.TextToSpeechClient()
 	voices = client.list_voices().voices
-	languages = unique_languages_from_voices(voices)
+	languages = googleUniqueLanguagesFromVoices(voices)
 	print(f' Languages: {len(languages)} '.center(60, '-'))
 	for i, language in enumerate(sorted(languages)):
 		print(f'{language:>10}', end='' if i % 5 < 4 else '\n')
