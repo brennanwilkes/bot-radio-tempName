@@ -45,6 +45,6 @@ def writeDJAudio(fn,pastSong=None,playlist=None,text=None,debug=False):
 
 	tts = gTTS(text)
 	tts.save(fn)
-	song = AudioSegment.from_mp3(fn)
-	song = song + 5
-	song.export(fn, format="mp3")
+	speech = AudioSegment.from_mp3(fn)
+	speech = speech + 5
+	speech.export(fn, format="mp3")

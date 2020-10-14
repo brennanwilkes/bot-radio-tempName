@@ -54,10 +54,11 @@ class MyClient(discord.Client):
 				self.playlist.downloadNextSongs(1,override=True,debug=True)
 		else:
 
-			oldSong = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
-			if os.path.exists(oldSong):
-				print("cleaning",oldSong)
-				os.remove(oldSong)
+			if(self.currentSong != None and self.currentSong.name != self.playlist.songs[0].name):
+				oldSong = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
+				if os.path.exists(oldSong):
+					print("cleaning",oldSong)
+					os.remove(oldSong)
 
 			self.currentSong = self.playlist.songs.pop(0)
 			songURL = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
