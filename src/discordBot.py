@@ -132,5 +132,13 @@ class MyClient(discord.Client):
 			if ctx.voice_client is not None:
 				return await ctx.voice_client.move_to(channel)
 			'''
+		elif args[0] == self.commandChar+"voice":
+			if len(args) > 1 and args[1] in googleRadioVoices:
+				self.voice = args[1]
+				await message.channel.send("Voice set to "+self.voice)
+			else:
+				if(len(args) > 1):
+					await message.channel.send("Invalid voice "+args[1])
+				await message.channel.send("Avaiable voices: "+"\n"+'\n'.join([v for v in googleRadioVoices]))
 
 		print('Message from {0.author}: {0.content}'.format(message))

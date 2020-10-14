@@ -86,9 +86,9 @@ def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=Non
 		raise Exception("Please provide either song or text")
 
 	if(text and debug):
-		print("Generating DJ for raw text")
+		print("Generating DJ for raw text with ",voice)
 	elif(debug):
-		print("Generating DJ for song:",pastSong.name,"->",playlist.songs[0].name)
+		print("Generating DJ for song:",pastSong.name,"->",playlist.songs[0].name,"with",voice)
 
 	if(pastSong):
 		text = generateDJText(pastSong,playlist)
