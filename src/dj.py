@@ -1,10 +1,16 @@
 from gtts import gTTS
 from pydub import AudioSegment
 import re
-import random
+import random, os, sys
+import glob
 from dateutil import parser
 from datetime import datetime
-from googleCloud import writeGoogleAudio
+from googleCloud import writeGoogleAudio, googleRadioVoices, googlePrimaryVoices
+
+
+PREFIX_PATH = sys.path[0]
+AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
+
 
 templateDJTexts = [
 	"You're listening to GCS radio. Next up, SONG_NAME, by SONG_ARTIST.",
@@ -80,7 +86,22 @@ def getWelcomeText(playlist):
 	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+comma_separator(playlist.songs[0].artists)+". Enjoy."
 
 def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",debug=False):
-	writeDJAudio(fn,voice=voice,text="SONG REQUEST",debug=debug)
+
+	reqText1 = "This just in on phone line "+str(random.randint(1, 6))+". This is GCS radio, you're live on air."
+	reqText2 = "My name is "+message.author.nick+". Huge fan! Can you play "+req.name+" please?"
+	reqText3 = "Absolutely "+message.author.nick+". Anything for a fan. Coming up next."
+
+
+	writeDJAudio(AUDIO_CACHE+"req1",voice=voice,text=reqText1,debug=debug)
+	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(googleRadioVoices),text=reqText2,debug=debug)
+	writeDJAudio(AUDIO_CACHE+"req3",voice=voice,text=reqText3,debug=debug)
+
+	req1 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req1"+".*")[0])
+	req2 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req2"+".*")[0])
+	req3 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req3"+".*")[0])
+
+	fullReq = req1 + req2 + req3
+	fullReq.export(fn+".mp3", format="mp3")
 
 
 def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,debug=False):
