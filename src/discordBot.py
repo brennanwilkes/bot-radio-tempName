@@ -92,7 +92,7 @@ class MyClient(discord.Client):
 		if(self.mode == 0):
 			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
 			if(firstTime):
-				self.playlist.downloadNextSongs(1,override=True,debug=True)
+				pass#self.playlist.downloadNextSongs(1,override=True,debug=True)
 		else:
 
 			if(self.currentSong != None and self.currentSong.name != self.playlist.songs[0].name):
@@ -160,12 +160,13 @@ class MyClient(discord.Client):
 			else:
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),debug=True)
+				self.playlist.downloadNextSongs(1,override=True,debug=True)
 
 				#connect to the voice channel that the person who wrote the message is in
 				if self.VC and (not self.VC == message.author.voice.channel):
 					await self.VC.disconnect()
 				self.VC = await message.author.voice.channel.connect()
-				
+
 				await self.playNextSong(None,firstTime=True)
 
 		elif args[0] == self.commandChar+"voice":
@@ -176,7 +177,7 @@ class MyClient(discord.Client):
 				if(len(args) > 1):
 					await message.channel.send("Invalid voice "+args[1])
 				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
-				
+
 		elif args[0] == self.commandChar + "request":
 			if(len(args)<2):
 				await message.channel.send("Please type a song name after $request")
