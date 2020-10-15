@@ -5,7 +5,7 @@ import re, sys
 #Relative path to self file
 PREFIX_PATH = sys.path[0]
 
-class spotifyConnection:
+class SpotifyConnection:
 
 	con = None
 	id = ""

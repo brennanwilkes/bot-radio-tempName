@@ -25,7 +25,7 @@ if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.json"
 
 #Import spotifyConnection object
-spotifyConnection = importSrcFile("spotifyConnection.py").spotifyConnection
+SpotifyConnection = importSrcFile("spotifyConnection.py").SpotifyConnection
 
 #Import playlist object
 importData = importSrcFile("playlist.py")
@@ -34,5 +34,5 @@ song = importData.song
 
 #Import discord bot
 discordClient = importSrcFile("discordBot.py")
-BotClient = discordClient.MyClient()
+BotClient = discordClient.DiscordClient()
 BotClient.run(discordClient.token())

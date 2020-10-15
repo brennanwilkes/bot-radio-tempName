@@ -12,7 +12,7 @@ from pydub import AudioSegment
 PREFIX_PATH = sys.path[0]
 MAIN_PATH = PREFIX_PATH+"/.."
 
-class song:
+class Song:
 
 	album = ""
 	name = ""
@@ -100,7 +100,7 @@ class song:
 		return True
 
 
-class playlist:
+class Playlist:
 
 	songs = []
 	collaborative = False
@@ -118,7 +118,7 @@ class playlist:
 
 		self.songs = []
 		for songJSON in playlistJSON["tracks"]["items"]:
-			self.songs.append(song(songJSON["track"]))
+			self.songs.append(Song(songJSON["track"]))
 
 	def updateYoutubeIDs(self,debug=False):
 		for song in self.songs:
