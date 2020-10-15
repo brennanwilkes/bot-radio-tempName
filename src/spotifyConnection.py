@@ -11,7 +11,7 @@ class SpotifyConnection:
 	uri = ""
 
 	#Constructor
-	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri"):
+	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri", verbose=False):
 
 		#Load ID
 		self.id = requireFile(ID_F)
@@ -22,6 +22,8 @@ class SpotifyConnection:
 
 		#Connect
 		self.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=self.uri, client_id=self.id, client_secret=self.secret))
+		if(verbose):
+			print("Succesfully connected to spotify ID "+self.id[:4]+("*"*len(self.id[4:])))
 
 	#Returns a JSON object of the search results
 	def loadPlaylist(self, playlist):

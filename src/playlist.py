@@ -94,6 +94,7 @@ class Song:
 				print("Could not find youtube source for",self.youtubeID)
 			return False
 
+		#Will need fixing if we use alternate file format
 		adj = AudioSegment.from_mp3(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3")
 		adj = adj - 5
 		adj.export(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3", format="mp3")
