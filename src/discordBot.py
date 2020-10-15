@@ -7,30 +7,19 @@ import glob
 import json
 import asyncio
 import re
+from googleCloud import googleRadioVoices, googlePrimaryVoices
 
-#may need to fix later
+#Custom imports
+from requireHeaders import PREFIX_PATH, requireFile
 import spotifyConnection as spot
 import playlist
 import dj
-from googleCloud import googleRadioVoices, googlePrimaryVoices
 
-PREFIX_PATH = sys.path[0]
+#Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
 
-def token():
-	TOKEN_FILE = PREFIX_PATH+"/auth/discordToken"
-
-	#Load Discord bot token
-	try:
-		fname = open(TOKEN_FILE, "r")
-		token = fname.read()
-	except IOError:
-		raise Exception("Please create file "+ TOKEN_FILE)
-	else:
-		fname.close()
-		return token
-
-class MyClient(discord.Client):
+#Discord client object
+class DiscordClient(discord.Client):
 	spotC = None
 	playlist = None
 	commandChar = "$"
@@ -38,6 +27,7 @@ class MyClient(discord.Client):
 	currentSong = None
 	mode = 1
 	voice = None
+	verbose = False
 
 
 	'''
@@ -45,6 +35,10 @@ class MyClient(discord.Client):
 	async def leave(self):
 		await self.voice_client.disconnect()
 	'''
+
+	def console(self,data):
+		if(self.verbose):
+			print(data)
 
 	def format_time_string(self, duration_ms):
 		sec_tot = int(duration_ms/1000)
@@ -84,47 +78,37 @@ class MyClient(discord.Client):
 	def triggerNextSong(self,error):
 		asyncio.run(self.playNextSong(error))
 
-	async def playNextSong(self,error,firstTime=False):
+	async def playNextSong(self,error):
 
 		if(len(self.playlist.songs)==0):
-			print("Empty playlist")
+			self.console("Empty playlist")
 			return
 
 		self.mode = 1 - self.mode
 		if(self.mode == 0):
 			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
-			if(firstTime):
-				pass#self.playlist.downloadNextSongs(1,override=True,debug=True)
 		else:
-			'''
-			if(self.currentSong != None and self.currentSong.name != self.playlist.songs[0].name):
-				oldSong = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
-			
-				if os.path.exists(oldSong):
-					print("cleaning",oldSong)
-					os.remove(oldSong)
-			'''
 			self.currentSong = self.playlist.songs.pop(0)
 			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 			if(len(songGlobs) < 1):
-				self.currentSong.downloadAudio(debug=True, override=True)
+				self.currentSong.downloadAudio(verbose=self.verbose, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.downloadNextSongs(3,debug=True)
-			self.playlist.updateNextSongsGenres(3,debug=True,sp=self.spotC)
+			self.playlist.downloadNextSongs(3,verbose=self.verbose)
+			self.playlist.updateNextSongsGenres(3,verbose=self.verbose,sp=self.spotC)
 
-			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,debug=True)
+			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
 
 
 
 
 	async def on_ready(self):
-		self.spotC = spot.spotifyConnection()
+		self.spotC = spot.SpotifyConnection()
 		self.voice = random.choice(googlePrimaryVoices)
-		print('Logged on as {0}!'.format(self.user))
+		self.console('Logged on as {0}!'.format(self.user))
 
 
 	async def getSongSource(self,fn):
@@ -156,21 +140,21 @@ class MyClient(discord.Client):
 
 		elif args[0] == self.commandChar+"play":
 			try:
-				self.playlist = playlist.playlist(self.spotC.loadPlaylist(args[1]))
+				self.playlist = playlist.Playlist(self.spotC.loadPlaylist(args[1]))
 			except Exception as e:
 				await message.channel.send("Invalid Playlist! AGHHHHH")
-				print(e)
+				self.console(e)
 			else:
 				random.shuffle(self.playlist.songs)
-				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),debug=True)
-				self.playlist.downloadNextSongs(1,override=True,debug=True)
+				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
+				self.playlist.downloadNextSongs(1,override=True,verbose=self.verbose)
 
 				#connect to the voice channel that the person who wrote the message is in
 				if self.VC and (not self.VC == message.author.voice.channel):
 					await self.VC.disconnect()
 				self.VC = await message.author.voice.channel.connect()
 
-				await self.playNextSong(None,firstTime=True)
+				await self.playNextSong(None)
 
 		elif args[0] == self.commandChar+"voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
@@ -186,14 +170,14 @@ class MyClient(discord.Client):
 				await message.channel.send("Please type a song name after $request")
 			else:
 				try:
-					print("Requesting"," ".join(args[1:]))
-					req = playlist.song(self.spotC.getSong(" ".join(args[1:])))
-					print("Found",req.name)
-					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH)
+					self.console("Requesting"," ".join(args[1:]))
+					req = playlist.Song(self.spotC.getSong(" ".join(args[1:])))
+					self.console("Found",req.name)
+					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
 
 				except Exception as e:
 					await message.channel.send("Invalid Request")
-					print("Error",e)
+					self.console("Error",e)
 				else:
 					pass
 		elif args[0] == self.commandChar+"die":
@@ -209,4 +193,4 @@ class MyClient(discord.Client):
 			$voice
 			$voice [voice]```''')
 
-		print('Message from {0.author}: {0.content}'.format(message))
+		self.console('Message from {0.author}: {0.content}'.format(message))

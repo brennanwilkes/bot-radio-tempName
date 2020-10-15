@@ -1,18 +1,15 @@
 from __future__ import unicode_literals
 import youtube_dl
-
 from youtube_search import YoutubeSearch
 import os, sys
 import glob
 import dj
 from pydub import AudioSegment
 
-
-#Relative path to self file
-PREFIX_PATH = sys.path[0]
+from requireHeaders import PREFIX_PATH, requireFile
 MAIN_PATH = PREFIX_PATH+"/.."
 
-class song:
+class Song:
 
 	album = ""
 	name = ""
@@ -56,16 +53,18 @@ class song:
 			return "CANNOT_FIND_SONG"
 		return query[0]["id"]
 
-	def downloadAudio(self,override=False,debug=False):
+	def downloadAudio(self,override=False,verbose=False):
 
 		if(self.youtubeID == None):
 			self.youtubeID = self.getYoutubeSearch()
 
 		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".part")):
-			if(debug): print("File already loaded:",self.name)
+			if(verbose):
+				print("File already loaded:",self.name)
 			return True
 
-		if(debug): print("Loading audio:",self.name)
+		if(verbose):
+			print("Loading audio:",self.name)
 
 
 		ydl_opts = {
@@ -76,7 +75,7 @@ class song:
 			"preferredquality": "192",
 		}],
 			"outtmpl": MAIN_PATH+"/audioCache/"+self.youtubeID+".%(etx)s",
-			"quiet": not debug
+			"quiet": not verbose
 		}
 
 		tries = 0
@@ -85,22 +84,24 @@ class song:
 				with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 					ydl.download(["https://www.youtube.com/watch?v="+self.youtubeID])
 			except Exception:
-				print("failed to load",self.youtubeID)
+				if(verbose):
+					print("failed to load",self.youtubeID)
 				tries += 1
 			else:
 				break
 		if(tries >= 5):
-			print("Could not find youtube source for",self.youtubeID)
+			if(verbose):
+				print("Could not find youtube source for",self.youtubeID)
 			return False
 
 		adj = AudioSegment.from_mp3(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3")
-		adj = adj - 8
+		adj = adj - 5
 		adj.export(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3", format="mp3")
 
 		return True
 
 
-class playlist:
+class Playlist:
 
 	songs = []
 	collaborative = False
@@ -118,36 +119,38 @@ class playlist:
 
 		self.songs = []
 		for songJSON in playlistJSON["tracks"]["items"]:
-			self.songs.append(song(songJSON["track"]))
+			self.songs.append(Song(songJSON["track"]))
 
-	def updateYoutubeIDs(self,debug=False):
+	def updateYoutubeIDs(self,verbose=False):
 		for song in self.songs:
 
-			if(debug): print("searching for",song.name)
+			if(verbose):
+				print("searching for",song.name)
 
 			song.youtubeID = song.getYoutubeSearch()
 
-			if(debug): print("found",song.youtubeID)
+			if(verbose):
+				print("found",song.youtubeID)
 
-	def insertSong(self,newSong,sp,message,voice,fn):
+	def insertSong(self,newSong,sp,message,voice,fn,verbose=False):
 		self.songs.insert(0,newSong)
-		self.downloadNextSongs(1,debug=True,override=True)
-		self.updateNextSongsGenres(1,debug=True,sp=sp)
-		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,debug=True)
+		self.downloadNextSongs(1,verbose=verbose,override=True)
+		self.updateNextSongsGenres(1,verbose=verbose,sp=sp)
+		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
 
-	def downloadAllSongs(self,debug=False, override=False):
-		self.downloadNextSongs(num=len(self.songs),debug=debug,override=override)
+	def downloadAllSongs(self,verbose=False, override=False):
+		self.downloadNextSongs(num=len(self.songs),verbose=verbose,override=override)
 
-	def downloadNextSongs(self, num=1, debug=False, override=False):
+	def downloadNextSongs(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
 			if(i >= len(self.songs)):
 				break
 
-			suc = self.songs[i].downloadAudio(debug=debug, override=override)
+			suc = self.songs[i].downloadAudio(verbose=verbose, override=override)
 			if not suc:
 				self.songs.pop(i)
 
-	def updateNextSongsGenres(self, num=1, sp=None, debug=False, override=False):
+	def updateNextSongsGenres(self, num=1, sp=None, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
 			self.songs[i].genres = sp.getArtistGenres(self.songs[i].artists[0])
 			if(len(self.songs[i].genres) == 0):

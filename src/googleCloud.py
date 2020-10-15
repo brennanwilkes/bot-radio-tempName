@@ -5,6 +5,7 @@ Note: ssml must be well-formed according to:
 """
 from google.cloud import texttospeech
 import sys, os
+from requireHeaders import PREFIX_PATH, requireFile
 
 
 
@@ -112,7 +113,7 @@ Good ones for radio:
 		"ja-JP-Wavenet-D",
 		"ko-KR-Wavenet-B",
 '''
-def writeGoogleAudio(voice_name, fn, text):
+def writeGoogleAudio(voice_name, fn, text, verbose=False):
 
 	language_code = '-'.join(voice_name.split('-')[:2])
 	text_input = texttospeech.SynthesisInput(text=text)
@@ -120,7 +121,19 @@ def writeGoogleAudio(voice_name, fn, text):
 		language_code=language_code,
 		name=voice_name)
 	audio_config = texttospeech.AudioConfig(
-		audio_encoding=texttospeech.AudioEncoding.MP3)
+		audio_encoding=texttospeech.AudioEncoding.MP3,
+		volume_gain_db=10.0)
+
+	'''
+	"audioEncoding": enum (AudioEncoding),
+	"speakingRate": number,
+	"pitch": number,
+	"volumeGainDb": number,
+	"sampleRateHertz": integer,
+	"effectsProfileId": [
+		string
+	]
+	'''
 
 	client = texttospeech.TextToSpeechClient()
 	response = client.synthesize_speech(
@@ -131,7 +144,8 @@ def writeGoogleAudio(voice_name, fn, text):
 	filename = f'{fn}.mp3'
 	with open(filename, 'wb') as out:
 		out.write(response.audio_content)
-		print(f'Audio content written to "{filename}"')
+		if(verbose):
+			print(f'Audio content written to "{filename}"')
 
 googleRadioVoices = [
 	"en-US-Wavenet-B",
