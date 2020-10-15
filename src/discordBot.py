@@ -147,10 +147,6 @@ class DiscordClient(discord.Client):
 		if (not len(message.content)) or (not message.content[0] == self.commandChar):
 			return
 
-		print(message)
-		print(message.channel)
-		print(message.author)
-
 		args = message.content.split(" ")
 		cmd = args[0][1:]
 
@@ -194,15 +190,19 @@ class DiscordClient(discord.Client):
 				try:
 					songReq = " ".join(args[1:])
 					self.console("Requesting "+songReq)
+					await message.channel.send("Request recieved")
+
 					req = playlist.Song(self.spotC.getSong(songReq))
 					self.console("Found"+req.name)
-					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
+					await message.channel.send("Found song: "+req.name)
 
+					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
 				except Exception as e:
 					await message.channel.send("Invalid Request")
 					self.console("Error "+str(e))
 				else:
-					pass
+					await message.channel.send(req.name+" coming up next")
+
 		elif cmd == "die":
 			if(self.VC):
 				await self.VC.disconnect()
