@@ -206,6 +206,7 @@ class DiscordClient(discord.Client):
 		elif cmd == "die":
 			if(self.VC):
 				await self.VC.disconnect()
+			await self.change_presence(activity=None)
 			await message.channel.send("Thank you for playing wing commander!")
 			sys.exit()
 
