@@ -97,6 +97,7 @@ class DiscordClient(discord.Client):
 				self.currentSong.downloadAudio(verbose=self.verbose, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
+			await self.change_presence(activity=discord.Game(name=self.currentSong.name))
 			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
@@ -123,6 +124,8 @@ class DiscordClient(discord.Client):
 			await self.defaultChannel.send("Bot ready to rock and roll")
 
 
+
+		await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move"))
 
 
 	async def getSongSource(self,fn):
@@ -190,14 +193,14 @@ class DiscordClient(discord.Client):
 			else:
 				try:
 					songReq = " ".join(args[1:])
-					self.console("Requesting",songReq)
+					self.console("Requesting "+songReq)
 					req = playlist.Song(self.spotC.getSong(songReq))
-					self.console("Found",req.name)
+					self.console("Found"+req.name)
 					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
 
 				except Exception as e:
 					await message.channel.send("Invalid Request")
-					self.console("Error",e)
+					self.console("Error "+str(e))
 				else:
 					pass
 		elif cmd == "die":
