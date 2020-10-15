@@ -157,12 +157,15 @@ class DiscordClient(discord.Client):
 				await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
 
 		elif cmd == "play":
+			await message.add_reaction("\U0001F4FB")
 			try:
 				self.playlist = playlist.Playlist(self.spotC.loadPlaylist(args[1]))
 			except Exception as e:
 				await message.channel.send("Invalid Playlist!")
 				self.console(e)
 			else:
+				await message.add_reaction("\U0001F44C")
+
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 				self.playlist.downloadNextSongs(1,override=True,verbose=self.verbose)
@@ -190,7 +193,8 @@ class DiscordClient(discord.Client):
 				try:
 					songReq = " ".join(args[1:])
 					self.console("Requesting "+songReq)
-					await message.channel.send("Request recieved")
+					await message.add_reaction("\U0000260E")
+					await message.add_reaction("\U0001F44C")
 
 					req = playlist.Song(self.spotC.getSong(songReq))
 					self.console("Found"+req.name)
@@ -201,7 +205,7 @@ class DiscordClient(discord.Client):
 					await message.channel.send("Invalid Request")
 					self.console("Error "+str(e))
 				else:
-					await message.channel.send(req.name+" coming up next")
+					await message.channel.send("\U0000260E"+" "+req.name+" coming up next "+"\U0000260E")
 
 		elif cmd == "die":
 			if(self.VC):
