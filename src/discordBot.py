@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.utils import get
 import requests
 import shutil
 import os, sys, random
@@ -28,6 +29,8 @@ class DiscordClient(discord.Client):
 	mode = 1
 	voice = None
 	verbose = False
+	defaultChannelName = "radio"
+	defaultChannel = None
 
 
 	'''
@@ -106,9 +109,20 @@ class DiscordClient(discord.Client):
 
 
 	async def on_ready(self):
-		self.spotC = spot.SpotifyConnection()
+		self.spotC = spot.SpotifyConnection(verbose=self.verbose)
 		self.voice = random.choice(googlePrimaryVoices)
 		self.console('Logged on as {0}!'.format(self.user))
+		self.console('Voice {0} selected'.format(self.voice))
+
+		for guild in self.guilds:
+			for channel in guild.text_channels:
+				if(channel.name == self.defaultChannelName):
+					self.defaultChannel = channel
+					self.console("Found default text channel "+channel.name)
+		if(self.defaultChannel):
+			await self.defaultChannel.send("Bot ready to rock and roll")
+
+
 
 
 	async def getSongSource(self,fn):
@@ -130,6 +144,9 @@ class DiscordClient(discord.Client):
 		if (not len(message.content)) or (not message.content[0] == self.commandChar):
 			return
 
+		print(message)
+		print(message.channel)
+		print(message.author)
 
 		args = message.content.split(" ")
 		cmd = args[0][1:]
