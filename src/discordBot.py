@@ -75,6 +75,8 @@ class MyClient(discord.Client):
 				sn = song.name[0:LINE_LENGTH-3]+ "..."
 			output += "{a:2d}. ".format(a=i) + sn + " "*(LINE_LENGTH-len(sn)) + self.format_time_string(song.duration) + "\n"
 
+		if len(output)> 2000: #max discord msg length
+			output = output[0:1990]+ "\n ... \n"
 		output += "```"
 		return output
 
@@ -92,19 +94,20 @@ class MyClient(discord.Client):
 		if(self.mode == 0):
 			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
 			if(firstTime):
-				self.playlist.downloadNextSongs(1,override=True,debug=True)
+				pass#self.playlist.downloadNextSongs(1,override=True,debug=True)
 		else:
-
+			'''
 			if(self.currentSong != None and self.currentSong.name != self.playlist.songs[0].name):
 				oldSong = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")[0]
+			
 				if os.path.exists(oldSong):
 					print("cleaning",oldSong)
 					os.remove(oldSong)
-
+			'''
 			self.currentSong = self.playlist.songs.pop(0)
 			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 			if(len(songGlobs) < 1):
-				self.currentSong.downloadAudio(debug=debug, override=override)
+				self.currentSong.downloadAudio(debug=True, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			songURL = songGlobs[0]
@@ -142,6 +145,7 @@ class MyClient(discord.Client):
 		if (not len(message.content)) or (not message.content[0] == self.commandChar):
 			return
 
+
 		args = message.content.split(" ")
 
 		if args[0] == self.commandChar+"queue":
@@ -159,16 +163,15 @@ class MyClient(discord.Client):
 			else:
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),debug=True)
+				self.playlist.downloadNextSongs(1,override=True,debug=True)
 
 				#connect to the voice channel that the person who wrote the message is in
+				if self.VC and (not self.VC == message.author.voice.channel):
+					await self.VC.disconnect()
 				self.VC = await message.author.voice.channel.connect()
 
 				await self.playNextSong(None,firstTime=True)
-			'''
-			#From music bot discord.py example - might need this in the future
-			if ctx.voice_client is not None:
-				return await ctx.voice_client.move_to(channel)
-			'''
+
 		elif args[0] == self.commandChar+"voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
 				self.voice = args[1]
@@ -176,7 +179,7 @@ class MyClient(discord.Client):
 			else:
 				if(len(args) > 1):
 					await message.channel.send("Invalid voice "+args[1])
-				await message.channel.send("Avaiable voices: "+"\n"+'\n'.join([v for v in googleRadioVoices]))
+				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
 
 		elif args[0] == self.commandChar + "request":
 			if(len(args)<2):
@@ -194,9 +197,16 @@ class MyClient(discord.Client):
 				else:
 					pass
 		elif args[0] == self.commandChar+"die":
+			await self.VC.disconnect()
 			await message.channel.send("Thank you for playing wing commander!")
 			sys.exit()
+
 		elif args[0] == self.commandChar+"help":
-			await message.channel.send("Commands:\n$help\n$play [playlist]\n$queue\n$voice\n$voice [voice]")
+			await message.channel.send('''```Commands:
+			$help
+			$play [playlist]
+			$queue
+			$voice
+			$voice [voice]```''')
 
 		print('Message from {0.author}: {0.content}'.format(message))

@@ -5,6 +5,7 @@ from youtube_search import YoutubeSearch
 import os, sys
 import glob
 import dj
+from pydub import AudioSegment
 
 
 #Relative path to self file
@@ -91,6 +92,11 @@ class song:
 		if(tries >= 5):
 			print("Could not find youtube source for",self.youtubeID)
 			return False
+
+		adj = AudioSegment.from_mp3(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3")
+		adj = adj - 8
+		adj.export(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3", format="mp3")
+
 		return True
 
 
