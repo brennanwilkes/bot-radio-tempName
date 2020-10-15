@@ -3,19 +3,8 @@ from importlib import util
 import json
 import sys, os
 
-
-#Relative path to this file
-PREFIX_PATH = sys.path[0]
-
-def importSrcFile(fn):
-	'''
-	input: path from src/ of file
-	returns: import object of the file
-	'''
-	spec = util.spec_from_file_location(fn, PREFIX_PATH+"/"+fn)
-	getModule = util.module_from_spec(spec)
-	spec.loader.exec_module(getModule)
-	return getModule
+from requireHeaders import PREFIX_PATH, requireFile
+from discordBot import DiscordClient
 
 #check for audioCache dir
 if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
@@ -24,15 +13,6 @@ if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
 #Export google cloud API Key path variable
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.json"
 
-#Import spotifyConnection object
-SpotifyConnection = importSrcFile("spotifyConnection.py").SpotifyConnection
 
-#Import playlist object
-importData = importSrcFile("playlist.py")
-playlist = importData.playlist
-song = importData.song
-
-#Import discord bot
-discordClient = importSrcFile("discordBot.py")
-BotClient = discordClient.DiscordClient()
-BotClient.run(discordClient.token())
+botClient = DiscordClient()
+botClient.run(requireFile("discordToken"))

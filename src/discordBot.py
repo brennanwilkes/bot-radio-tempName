@@ -10,27 +10,13 @@ import re
 from googleCloud import googleRadioVoices, googlePrimaryVoices
 
 #Custom imports
+from requireHeaders import PREFIX_PATH, requireFile
 import spotifyConnection as spot
 import playlist
 import dj
 
-#local path info
-PREFIX_PATH = sys.path[0]
+#Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
-
-#Checks for discord token file
-def token():
-	TOKEN_FILE = PREFIX_PATH+"/auth/discordToken"
-
-	#Load Discord bot token
-	try:
-		fname = open(TOKEN_FILE, "r")
-		token = fname.read()
-	except IOError:
-		raise Exception("Please create file "+ TOKEN_FILE)
-	else:
-		fname.close()
-		return token
 
 #Discord client object
 class DiscordClient(discord.Client):

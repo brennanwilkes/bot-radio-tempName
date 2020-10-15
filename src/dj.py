@@ -7,8 +7,8 @@ from dateutil import parser
 from datetime import datetime
 from googleCloud import writeGoogleAudio, googleRadioVoices, googlePrimaryVoices
 
+from requireHeaders import PREFIX_PATH, requireFile
 
-PREFIX_PATH = sys.path[0]
 AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
 
 

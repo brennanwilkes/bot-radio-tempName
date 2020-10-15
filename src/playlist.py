@@ -1,15 +1,12 @@
 from __future__ import unicode_literals
 import youtube_dl
-
 from youtube_search import YoutubeSearch
 import os, sys
 import glob
 import dj
 from pydub import AudioSegment
 
-
-#Relative path to self file
-PREFIX_PATH = sys.path[0]
+from requireHeaders import PREFIX_PATH, requireFile
 MAIN_PATH = PREFIX_PATH+"/.."
 
 class Song:

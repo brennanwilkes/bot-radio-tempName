@@ -1,9 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import re, sys
-
-#Relative path to self file
-PREFIX_PATH = sys.path[0]
+from requireHeaders import PREFIX_PATH, requireFile
 
 class SpotifyConnection:
 
