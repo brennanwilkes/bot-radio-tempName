@@ -94,6 +94,7 @@ class DiscordClient(discord.Client):
 				self.currentSong.downloadAudio(verbose=self.verbose, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
+			await self.change_presence(activity=discord.Game(name=self.currentSong.name))
 			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
@@ -109,6 +110,8 @@ class DiscordClient(discord.Client):
 		self.spotC = spot.SpotifyConnection()
 		self.voice = random.choice(googlePrimaryVoices)
 		self.console('Logged on as {0}!'.format(self.user))
+
+		await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move"))
 
 
 	async def getSongSource(self,fn):
