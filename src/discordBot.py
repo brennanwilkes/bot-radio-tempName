@@ -111,7 +111,8 @@ class DiscordClient(discord.Client):
 
 	async def on_ready(self):
 		self.spotC = spot.SpotifyConnection(verbose=self.verbose)
-		self.voice = random.choice(googlePrimaryVoices)
+		#self.voice = random.choice(googlePrimaryVoices)
+		self.voice = "en-AU-Wavenet-B"
 		self.console('Logged on as {0}!'.format(self.user))
 		self.console('Voice {0} selected'.format(self.voice))
 
