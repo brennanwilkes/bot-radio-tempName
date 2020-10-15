@@ -13,5 +13,5 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.j
 
 
 botClient = DiscordClient()
-botClient.verbose = False
+botClient.verbose = True
 botClient.run(requireFile("discordToken"))

@@ -93,7 +93,7 @@ def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",verbose=False):
 
 
 	writeDJAudio(AUDIO_CACHE+"req1",voice=voice,text=reqText1,verbose=verbose)
-	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(googleRadioVoices),text=reqText2,verbose=verbose)
+	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(googleRadioVoices.copy().remove(voice)),text=reqText2,verbose=verbose)
 	writeDJAudio(AUDIO_CACHE+"req3",voice=voice,text=reqText3,verbose=verbose)
 
 	req1 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req1"+".*")[0])

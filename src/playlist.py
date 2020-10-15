@@ -95,7 +95,7 @@ class Song:
 			return False
 
 		adj = AudioSegment.from_mp3(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3")
-		adj = adj - 8
+		adj = adj - 5
 		adj.export(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3", format="mp3")
 
 		return True
