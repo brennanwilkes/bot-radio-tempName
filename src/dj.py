@@ -85,16 +85,16 @@ def getWelcomeText(playlist):
 	#return "Welcome to GCS radio."
 	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+comma_separator(playlist.songs[0].artists)+". Enjoy."
 
-def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",debug=False):
+def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",verbose=False):
 
 	reqText1 = "This just in on phone line "+str(random.randint(1, 6))+". This is GCS radio, you're live on air."
 	reqText2 = "My name is "+message.author.nick+". Huge fan! Can you play "+req.name+" please?"
 	reqText3 = "Absolutely "+message.author.nick+". Anything for a fan. Coming up next."
 
 
-	writeDJAudio(AUDIO_CACHE+"req1",voice=voice,text=reqText1,debug=debug)
-	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(googleRadioVoices),text=reqText2,debug=debug)
-	writeDJAudio(AUDIO_CACHE+"req3",voice=voice,text=reqText3,debug=debug)
+	writeDJAudio(AUDIO_CACHE+"req1",voice=voice,text=reqText1,verbose=verbose)
+	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(googleRadioVoices),text=reqText2,verbose=verbose)
+	writeDJAudio(AUDIO_CACHE+"req3",voice=voice,text=reqText3,verbose=verbose)
 
 	req1 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req1"+".*")[0])
 	req2 = AudioSegment.from_mp3(glob.glob(AUDIO_CACHE+"req2"+".*")[0])
@@ -104,23 +104,18 @@ def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",debug=False):
 	fullReq.export(fn+".mp3", format="mp3")
 
 
-def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,debug=False):
+def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,verbose=False):
 	if(pastSong==None and text==None) or (pastSong!=None and text!=None):
 		raise Exception("Please provide either song or text")
 
-	if(text and debug):
+	if(text and verbose):
 		print("Generating DJ for raw text with ",voice)
-	elif(debug and len(playlist.songs) > 0):
+	elif(verbose and len(playlist.songs) > 0):
 		print("Generating DJ for song:",pastSong.name,"->",playlist.songs[0].name,"with",voice)
-	else:
+	elif(verbose):
 		print("Playlist is empty")
 
 	if(pastSong):
 		text = generateDJText(pastSong,playlist)
 
-	writeGoogleAudio(voice,fn,text)
-	#tts = gTTS(text)
-	#tts.save(fn)
-	#speech = AudioSegment.from_mp3(fn)
-	#speech = speech + 5
-	#speech.export(fn, format="mp3")
+	writeGoogleAudio(voice,fn,text,verbose=verbose)

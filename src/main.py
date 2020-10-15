@@ -1,7 +1,4 @@
-import re
-from importlib import util
-import json
-import sys, os
+import os
 
 from requireHeaders import PREFIX_PATH, requireFile
 from discordBot import DiscordClient
@@ -16,4 +13,5 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.j
 
 
 botClient = DiscordClient()
+botClient.verbose = False
 botClient.run(requireFile("discordToken"))

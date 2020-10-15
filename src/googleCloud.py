@@ -113,7 +113,7 @@ Good ones for radio:
 		"ja-JP-Wavenet-D",
 		"ko-KR-Wavenet-B",
 '''
-def writeGoogleAudio(voice_name, fn, text):
+def writeGoogleAudio(voice_name, fn, text, verbose=False):
 
 	language_code = '-'.join(voice_name.split('-')[:2])
 	text_input = texttospeech.SynthesisInput(text=text)
@@ -132,7 +132,8 @@ def writeGoogleAudio(voice_name, fn, text):
 	filename = f'{fn}.mp3'
 	with open(filename, 'wb') as out:
 		out.write(response.audio_content)
-		print(f'Audio content written to "{filename}"')
+		if(verbose):
+			print(f'Audio content written to "{filename}"')
 
 googleRadioVoices = [
 	"en-US-Wavenet-B",
