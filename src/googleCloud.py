@@ -124,17 +124,6 @@ def writeGoogleAudio(voice_name, fn, text, verbose=False):
 		audio_encoding=texttospeech.AudioEncoding.MP3,
 		volume_gain_db=10.0)
 
-	'''
-	"audioEncoding": enum (AudioEncoding),
-	"speakingRate": number,
-	"pitch": number,
-	"volumeGainDb": number,
-	"sampleRateHertz": integer,
-	"effectsProfileId": [
-		string
-	]
-	'''
-
 	client = texttospeech.TextToSpeechClient()
 	response = client.synthesize_speech(
 		input=text_input,

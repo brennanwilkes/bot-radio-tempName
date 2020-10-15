@@ -118,6 +118,7 @@ class DiscordClient(discord.Client):
 			source = await discord.FFmpegOpusAudio.from_probe(executable="ffmpeg", source = fn, method='fallback')
 		return source
 
+
 	async def on_message(self, message):
 
 		secret_passphrase = "wah"
@@ -131,18 +132,19 @@ class DiscordClient(discord.Client):
 
 
 		args = message.content.split(" ")
+		cmd = args[0][1:]
 
-		if args[0] == self.commandChar+"queue":
+		if cmd == "queue":
 			if not self.playlist or not self.currentSong:
 				await message.channel.send("Error! Playlist is empty")
 			else:
 				await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
 
-		elif args[0] == self.commandChar+"play":
+		elif cmd == "play":
 			try:
 				self.playlist = playlist.Playlist(self.spotC.loadPlaylist(args[1]))
 			except Exception as e:
-				await message.channel.send("Invalid Playlist! AGHHHHH")
+				await message.channel.send("Invalid Playlist!")
 				self.console(e)
 			else:
 				random.shuffle(self.playlist.songs)
@@ -156,7 +158,7 @@ class DiscordClient(discord.Client):
 
 				await self.playNextSong(None)
 
-		elif args[0] == self.commandChar+"voice":
+		elif cmd == "voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
 				self.voice = args[1]
 				await message.channel.send("Voice set to "+self.voice)
@@ -165,13 +167,14 @@ class DiscordClient(discord.Client):
 					await message.channel.send("Invalid voice "+args[1])
 				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
 
-		elif args[0] == self.commandChar + "request":
+		elif cmd == "request":
 			if(len(args)<2):
 				await message.channel.send("Please type a song name after $request")
 			else:
 				try:
-					self.console("Requesting"," ".join(args[1:]))
-					req = playlist.Song(self.spotC.getSong(" ".join(args[1:])))
+					songReq = " ".join(args[1:])
+					self.console("Requesting",songReq)
+					req = playlist.Song(self.spotC.getSong(songReq))
 					self.console("Found",req.name)
 					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
 
@@ -180,12 +183,12 @@ class DiscordClient(discord.Client):
 					self.console("Error",e)
 				else:
 					pass
-		elif args[0] == self.commandChar+"die":
+		elif cmd == "die":
 			await self.VC.disconnect()
 			await message.channel.send("Thank you for playing wing commander!")
 			sys.exit()
 
-		elif args[0] == self.commandChar+"help":
+		elif cmd == "help":
 			await message.channel.send('''```Commands:
 			$help
 			$play [playlist]
