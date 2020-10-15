@@ -173,14 +173,14 @@ class DiscordClient(discord.Client):
 				await message.channel.send("Please type a song name after $request")
 			else:
 				try:
-					self.console("Requesting"," ".join(args[1:]))
+					self.console("Requesting "+" ".join(args[1:]))
 					req = playlist.Song(self.spotC.getSong(" ".join(args[1:])))
-					self.console("Found",req.name)
+					self.console("Found "+req.name)
 					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
 
 				except Exception as e:
 					await message.channel.send("Invalid Request")
-					self.console("Error",e)
+					self.console("Error "+str(e))
 				else:
 					pass
 		elif args[0] == self.commandChar+"die":
