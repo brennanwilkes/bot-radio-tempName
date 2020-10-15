@@ -11,34 +11,14 @@ class SpotifyConnection:
 	uri = ""
 
 	#Constructor
-	def __init__(self, ID_PATH = PREFIX_PATH+"/auth/id", SECRET_PATH = PREFIX_PATH+"/auth/secret", URI_PATH = PREFIX_PATH+"/auth/uri"):
+	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri"):
 
 		#Load ID
-		try:
-			idFile = open(ID_PATH,"r")
-			self.id = idFile.read().strip()
-		except IOError:
-			raise Exception("Please create file "+ID_PATH)
-		else:
-			idFile.close()
-
+		self.id = requireFile(ID_F)
 		#Load Secret
-		try:
-			secretFile = open(SECRET_PATH,"r")
-			self.secret = secretFile.read().strip()
-		except IOError:
-			raise Exception("Please create file "+SECRET_PATH)
-		else:
-			secretFile.close()
-
+		self.secret = requireFile(SECRET_F)
 		#Load URI
-		try:
-			uriFile = open(URI_PATH,"r")
-			self.uri = uriFile.read().strip()
-		except IOError:
-			raise Exception("Please create file "+URI_PATH)
-		else:
-			uriFile.close()
+		self.uri = requireFile(URI_F)
 
 		#Connect
 		self.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=self.uri, client_id=self.id, client_secret=self.secret))

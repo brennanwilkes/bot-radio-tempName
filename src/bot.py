@@ -11,6 +11,7 @@ if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
 	os.mkdir(PREFIX_PATH+"/../audioCache")
 
 #Export google cloud API Key path variable
+requireFile("google-cloud.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.json"
 
 
