@@ -62,14 +62,14 @@ class DiscordClient(discord.Client):
 		LINE_LENGTH = 50
 		i=1
 		output = "```Now playing:\n"
-		output += " 1. "+ currentSong.name + " "*(LINE_LENGTH-len(currentSong.name)) + self.format_time_string(currentSong.duration) + "\n"
+		output += " 1. "+ currentSong.artists[0] + " - " + currentSong.name + " "*(LINE_LENGTH-len(currentSong.artists[0] + " - " + currentSong.name)) + self.format_time_string(currentSong.duration) + "\n"
 		output += "Up next:\n"
 
 		for song in playlistSongs:
 			i+=1
-			sn = song.name
-			if len(song.name) > LINE_LENGTH: #truncate song name if it exceeds the line length
-				sn = song.name[0:LINE_LENGTH-3]+ "..."
+			sn = song.artists[0] + " - " + song.name
+			if len(sn) > LINE_LENGTH: #truncate song name if it exceeds the line length
+				sn = sn[0:LINE_LENGTH-3]+ "..."
 			output += "{a:2d}. ".format(a=i) + sn + " "*(LINE_LENGTH-len(sn)) + self.format_time_string(song.duration) + "\n"
 
 		if len(output)> 2000: #max discord msg length
@@ -97,7 +97,7 @@ class DiscordClient(discord.Client):
 				self.currentSong.downloadAudio(verbose=self.verbose, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
-			await self.change_presence(activity=discord.Game(name=self.currentSong.name))
+			await self.change_presence(activity=discord.Game(name=self.currentSong.artists[0] + " - " + self.currentSong.name))
 			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
