@@ -213,7 +213,7 @@ class DiscordClient(discord.Client):
 				await self.VC.disconnect()
 			await self.change_presence(activity=None)
 			await message.channel.send("Thank you for playing wing commander!")
-			sys.exit()
+			await self.logout()
 
 		elif cmd == "help":
 			await message.channel.send('''```Commands:
