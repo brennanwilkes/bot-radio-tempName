@@ -11,7 +11,7 @@ import re
 from googleCloud import googleRadioVoices, googlePrimaryVoices
 
 #Custom imports
-from requireHeaders import PREFIX_PATH, requireFile
+from requireHeaders import PREFIX_PATH
 import spotifyConnection as spot
 import playlist
 import dj

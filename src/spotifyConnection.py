@@ -1,7 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import re, sys
-from requireHeaders import PREFIX_PATH, requireFile
+from requireHeaders import PREFIX_PATH, getTokenFromFile
 
 class SpotifyConnection:
 
@@ -14,11 +14,11 @@ class SpotifyConnection:
 	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri", verbose=False):
 
 		#Load ID
-		self.id = requireFile(ID_F)
+		self.id = getTokenFromFile(ID_F)
 		#Load Secret
-		self.secret = requireFile(SECRET_F)
+		self.secret = getTokenFromFile(SECRET_F)
 		#Load URI
-		self.uri = requireFile(URI_F)
+		self.uri = getTokenFromFile(URI_F)
 
 		#Connect
 		self.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=self.uri, client_id=self.id, client_secret=self.secret))

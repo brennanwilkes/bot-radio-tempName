@@ -5,7 +5,7 @@ Note: ssml must be well-formed according to:
 """
 from google.cloud import texttospeech
 import sys, os
-from requireHeaders import PREFIX_PATH, requireFile
+from requireHeaders import PREFIX_PATH
 
 
 

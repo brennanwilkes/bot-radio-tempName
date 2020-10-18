@@ -6,7 +6,7 @@ import glob
 import dj
 from pydub import AudioSegment
 
-from requireHeaders import PREFIX_PATH, requireFile
+from requireHeaders import PREFIX_PATH
 MAIN_PATH = PREFIX_PATH+"/.."
 
 class Song:

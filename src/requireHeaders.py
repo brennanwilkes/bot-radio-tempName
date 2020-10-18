@@ -6,7 +6,7 @@ DEFAULT_TOKEN_PATH = PREFIX_PATH+"/auth/"
 
 
 #Checks for a requirement file and returns the data
-def requireFile(fn,path=DEFAULT_TOKEN_PATH):
+def getTokenFromFile(fn,path=DEFAULT_TOKEN_PATH):
 
 	#Load token
 	try:
