@@ -94,14 +94,14 @@ class DiscordClient(discord.Client):
 			self.currentSong = self.playlist.songs.pop(0)
 			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 			if(len(songGlobs) < 1):
-				self.currentSong.downloadAudio(verbose=self.verbose, override=True)
+				self.currentSong.initSongData(verbose=self.verbose, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			await self.change_presence(activity=discord.Game(name=self.currentSong.artists[0] + " - " + self.currentSong.name))
 			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.downloadNextSongs(3,verbose=self.verbose)
+			self.playlist.initNextSongs(3,verbose=self.verbose)
 			self.playlist.updateNextSongsGenres(3,verbose=self.verbose,sp=self.spotC)
 
 			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
@@ -169,7 +169,7 @@ class DiscordClient(discord.Client):
 
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
-				self.playlist.downloadNextSongs(1,override=True,verbose=self.verbose)
+				self.playlist.initNextSongs(1,override=True,verbose=self.verbose)
 
 				#connect to the voice channel that the person who wrote the message is in
 				if self.VC and (not self.VC == message.author.voice.channel):

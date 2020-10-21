@@ -30,32 +30,19 @@ class Playlist:
 		for songJSON in playlistJSON["tracks"]["items"]:
 			self.songs.append(Song(songJSON["track"]))
 
-	def updateYoutubeIDs(self,verbose=False):
-		for song in self.songs:
-
-			if(verbose):
-				print("searching for",song.name)
-
-			song.youtubeID = song.getYoutubeSearch()
-
-			if(verbose):
-				print("found",song.youtubeID)
 
 	def insertSong(self,newSong,sp,message,voice,fn,verbose=False):
 		self.songs.insert(0,newSong)
-		self.downloadNextSongs(1,verbose=verbose,override=True)
+		self.initNextSongs(1,verbose=verbose,override=True)
 		self.updateNextSongsGenres(1,verbose=verbose,sp=sp)
 		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
 
-	def downloadAllSongs(self,verbose=False, override=False):
-		self.downloadNextSongs(num=len(self.songs),verbose=verbose,override=override)
-
-	def downloadNextSongs(self, num=1, verbose=False, override=False):
+	def initNextSongs(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
 			if(i >= len(self.songs)):
 				break
 
-			suc = self.songs[i].downloadAudio(verbose=verbose, override=override)
+			suc = self.songs[i].initSongData(verbose=verbose, override=override)
 			if not suc:
 				self.songs.pop(i)
 

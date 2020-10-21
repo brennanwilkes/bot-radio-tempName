@@ -18,6 +18,8 @@ class Song:
 	explicit = False
 	duration = 0
 	youtubeID = None
+	fileName = None
+	extension = None
 
 	def __init__(self, songJSON):
 
@@ -37,6 +39,18 @@ class Song:
 
 		self.genres = None
 
+
+	def initSongData(self,override=False,verbose=False):
+		if(self.youtubeID == None):
+			self.youtubeID = self.getYoutubeSearch()
+		if(self.youtubeID == "CANNOT_FIND_SONG"):
+			return False
+
+		self.fileName = MAIN_PATH+"/audioCache/"+self.youtubeID
+
+		return self.downloadAudio(override=override, verbose=verbose)
+
+
 	def getYoutubeSearch(self):
 		search = self.name + " by " + commaSeparator(self.artists) + " audio official song"
 
@@ -48,10 +62,7 @@ class Song:
 
 	def downloadAudio(self,override=False,verbose=False):
 
-		if(self.youtubeID == None):
-			self.youtubeID = self.getYoutubeSearch()
-
-		if (not override) and glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".*") and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".NA")) and (not glob.glob(MAIN_PATH+"/audioCache/"+self.youtubeID+".part")):
+		if (not override) and glob.glob(self.fileName+".*") and (not glob.glob(self.fileName+".NA")) and (not glob.glob(self.fileName+".part")):
 			if(verbose):
 				print("File already loaded:",self.name)
 			return True
@@ -67,7 +78,7 @@ class Song:
 			"preferredcodec": "mp3",
 			"preferredquality": "192",
 		}],
-			"outtmpl": MAIN_PATH+"/audioCache/"+self.youtubeID+".%(etx)s",
+			"outtmpl": self.fileName+".%(etx)s",
 			"quiet": not verbose
 		}
 
@@ -87,9 +98,13 @@ class Song:
 				print("Could not find youtube source for",self.youtubeID)
 			return False
 
-		#Will need fixing if we use alternate file format
-		adj = AudioSegment.from_mp3(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3")
+		if glob.glob(self.fileName+".*") and (not glob.glob(self.fileName+".NA")) and (not glob.glob(self.fileName+".part")):
+			self.extension = os.path.splitext(glob.glob(self.fileName+".*")[0])[1][1:]
+		else:
+			return False
+
+		adj = AudioSegment.from_mp3(self.fileName+"."+self.extension)
 		adj = adj - 5
-		adj.export(MAIN_PATH+"/audioCache/"+self.youtubeID+".mp3", format="mp3")
+		adj.export(self.fileName+"."+self.extension, format=self.extension)
 
 		return True
