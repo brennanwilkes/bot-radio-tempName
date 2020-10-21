@@ -7,7 +7,7 @@ from dateutil import parser
 from datetime import datetime
 from googleCloud import writeGoogleAudio, googleRadioVoices, googlePrimaryVoices
 
-from requireHeaders import PREFIX_PATH
+from requireHeaders import PREFIX_PATH, commaSeparator
 
 AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
 
@@ -51,8 +51,6 @@ templateDJTexts = [
 	"One of my personal favourites, PAST_SONG_NAME, great tune."
 ]
 
-def comma_separator(seq):
-	return ' and '.join([', '.join(seq[:-1]), seq[-1]] if len(seq) > 2 else seq)
 
 
 def generateDJText(pastSong,playlist):
@@ -60,13 +58,13 @@ def generateDJText(pastSong,playlist):
 
 	text = random.choice(templateDJTexts)
 	text = re.sub("PAST_SONG_NAME", pastSong.name, text)
-	text = re.sub("PAST_SONG_ARTIST", comma_separator(pastSong.artists), text)
+	text = re.sub("PAST_SONG_ARTIST", commaSeparator(pastSong.artists), text)
 	text = re.sub("PAST_SONG_ALBUM", pastSong.album, text)
 	text = re.sub("PAST_SONG_RELEASE", str(parser.parse(pastSong.release if (pastSong!=None and len(pastSong.release)>=2) else "2020").year), text)
 	text = re.sub("PAST_SONG_GENRE", random.choice(pastSong.genres if pastSong.genres else ["cool music"]), text)
 
 	text = re.sub("SONG_NAME", curSong.name, text)
-	text = re.sub("SONG_ARTIST", comma_separator(curSong.artists), text)
+	text = re.sub("SONG_ARTIST", commaSeparator(curSong.artists), text)
 	text = re.sub("SONG_ALBUM", curSong.album, text)
 	text = re.sub("SONG_RELEASE", str(parser.parse(curSong.release if (curSong!=None and len(curSong.release)>=2) else "2020").year), text)
 	text = re.sub("SONG_GENRE", random.choice(curSong.genres if curSong.genres else ["cool music"]), text)
@@ -83,7 +81,7 @@ def generateDJText(pastSong,playlist):
 
 def getWelcomeText(playlist):
 	#return "Welcome to GCS radio."
-	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+comma_separator(playlist.songs[0].artists)+". Enjoy."
+	return "Welcome to GCS radio. Today we'll be listening to "+playlist.name+" by "+playlist.owner+". To start off the night, here's "+playlist.songs[0].name+" by "+commaSeparator(playlist.songs[0].artists)+". Enjoy."
 
 def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",verbose=False):
 

@@ -13,7 +13,7 @@ from googleCloud import googleRadioVoices, googlePrimaryVoices
 #Custom imports
 from requireHeaders import PREFIX_PATH
 import spotifyConnection as spot
-import playlist
+import playlist, song
 import dj
 
 #Path to store dj files
@@ -197,7 +197,7 @@ class DiscordClient(discord.Client):
 					await message.add_reaction("\U0000260E")
 					await message.add_reaction("\U0001F44C")
 
-					req = playlist.Song(self.spotC.getSong(songReq))
+					req = song.Song(self.spotC.getSong(songReq))
 					self.console("Found"+req.name)
 					await message.channel.send("Found song: "+req.name)
 
