@@ -16,6 +16,7 @@ import spotifyConnection as spot
 import playlist, song
 import dj
 from globalSingleton import *
+import station
 
 #Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
@@ -161,6 +162,10 @@ class DiscordClient(discord.Client):
 				self.console(e)
 			else:
 				await message.add_reaction("\U0001F44C")
+
+				s = station.Station(playlist=self.playlist,waveLength="94.5")
+				fn = s.saveToFile()
+				station.Station(loadFromFile=fn)
 
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)

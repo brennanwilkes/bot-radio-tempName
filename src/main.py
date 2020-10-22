@@ -9,6 +9,10 @@ from spotifyConnection import SpotifyConnection
 if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
 	os.mkdir(PREFIX_PATH+"/../audioCache")
 
+#check for stations dir
+if not os.path.isdir(PREFIX_PATH+"/../stations"):
+	os.mkdir(PREFIX_PATH+"/../stations")
+
 #Export google cloud API Key path variable
 getTokenFromFile("google-cloud.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.json"

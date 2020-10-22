@@ -21,23 +21,36 @@ class Song:
 	fileName = None
 	extension = None
 
-	def __init__(self, songJSON):
+	def __init__(self, songJSON=None, song=None):
 
-		self.album = songJSON["album"]["name"]
+		#Copy constructor
+		if(song):
+			self.album = song.album
+			self.release = song.release
+			self.artists = []
+			for a in song.artists:
+				self.artists.append(a)
+			self.explicit = song.explicit
+			self.name = song.name
+			self.duration = song.duration
+			self.genres = song.genres
 
-		self.release = songJSON["album"]["release_date"]
+		else:
+			self.album = songJSON["album"]["name"]
 
-		self.artists = []
-		for artist in songJSON["artists"]:
-			self.artists.append(artist["name"])
+			self.release = songJSON["album"]["release_date"]
 
-		self.explicit = songJSON["explicit"]
+			self.artists = []
+			for artist in songJSON["artists"]:
+				self.artists.append(artist["name"])
 
-		self.name = songJSON["name"]
+			self.explicit = songJSON["explicit"]
 
-		self.duration = songJSON["duration_ms"]
+			self.name = songJSON["name"]
 
-		self.genres = None
+			self.duration = songJSON["duration_ms"]
+
+			self.genres = None
 
 
 	def prepare(self,override=False,verbose=False):
@@ -69,6 +82,12 @@ class Song:
 		if (not override) and glob.glob(self.fileName+".*") and (not glob.glob(self.fileName+".NA")) and (not glob.glob(self.fileName+".part")):
 			if(verbose):
 				print("File already loaded:",self.name)
+
+			if glob.glob(self.fileName+".*") and (not glob.glob(self.fileName+".NA")) and (not glob.glob(self.fileName+".part")):
+				self.extension = os.path.splitext(glob.glob(self.fileName+".*")[0])[1][1:]
+			else:
+				return False
+
 			return True
 
 		if(verbose):
