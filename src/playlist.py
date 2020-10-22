@@ -46,7 +46,3 @@ class Playlist:
 			suc = self.songs[i].prepare(verbose=verbose, override=override)
 			if not suc:
 				self.songs.pop(i)
-
-	def updateNextSongsGenres(self, num=1, verbose=False, override=False):
-		for i in range(min(len(self.songs),num)):
-			self.songs[i].genres = spotifyConInstance.getArtistGenres(self.songs[i].artists[0])

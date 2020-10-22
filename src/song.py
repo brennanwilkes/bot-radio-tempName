@@ -45,12 +45,15 @@ class Song:
 			self.youtubeID = self.getYoutubeSearch()
 		if(self.youtubeID == "CANNOT_FIND_SONG"):
 			return False
+		if(not self.genres):
+			self.genres = spotifyConInstance.getArtistGenres(self.artists[0])
 
 		self.fileName = MAIN_PATH+"/audioCache/"+self.youtubeID
 
 		return self.downloadAudio(override=override, verbose=verbose)
 
-
+	def getAudioFilename(self):
+		return self.fileName + "." + self.extension
 
 	def getYoutubeSearch(self):
 		search = self.name + " by " + commaSeparator(self.artists) + " audio official song"

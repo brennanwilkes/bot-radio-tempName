@@ -92,17 +92,12 @@ class DiscordClient(discord.Client):
 			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
 		else:
 			self.currentSong = self.playlist.songs.pop(0)
-			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
-			if(len(songGlobs) < 1):
-				self.playlist.prepareNextSongs(1,verbose=self.verbose, override=True)
-				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			await self.change_presence(activity=discord.Game(name=self.currentSong.artists[0] + " - " + self.currentSong.name))
-			songURL = songGlobs[0]
+			songURL = self.currentSong.getAudioFilename()
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
 			self.playlist.prepareNextSongs(3,verbose=self.verbose)
-			self.playlist.updateNextSongsGenres(3,verbose=self.verbose)
 
 			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
 
