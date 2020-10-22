@@ -10,10 +10,17 @@ MAIN_PATH = PREFIX_PATH+"/.."
 
 class Station:
 
-	def __init__(self, loadFromFile=None, playlistJSON=None, playlist=None, station=None, host="en-AU-Wavenet-B", waveLength="100.0"):
+	def __init__(self, loadFromFile=None, playlistJSON=None, playlist=None, station=None, host="en-AU-Wavenet-B", waveLength="100.0", verbose=False):
 		self.songs = []
 		self.host = host
 		self.waveLength = waveLength
+
+		if(playlistJSON):
+			self.addPlaylistJSON(playlistJSON)
+		if(playlist):
+			self.addPlaylist(playlist)
+		if(station):
+			self.addPlaylist(station)
 
 		if(loadFromFile):
 			f = open(loadFromFile, 'rb')
@@ -23,13 +30,9 @@ class Station:
 			self.songs = load.songs
 			self.host = load.host
 			self.waveLength = load.waveLength
-
-		if(playlistJSON):
-			self.addPlaylistJSON(playlistJSON)
-		if(playlist):
-			self.addPlaylist(playlist)
-		if(station):
-			self.addPlaylist(station)
+		else:
+			fn = self.saveToFile()
+			if(verbose): print("Station saved to "+fn)
 
 	def addPlaylistJSON(self, playlistJSON):
 		for songJSON in playlistJSON["tracks"]["items"]:

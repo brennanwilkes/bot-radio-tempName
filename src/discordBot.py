@@ -16,7 +16,7 @@ import spotifyConnection as spot
 import playlist, song
 import dj
 from globalSingleton import *
-import station
+from station import Station
 
 #Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
@@ -163,10 +163,6 @@ class DiscordClient(discord.Client):
 			else:
 				await message.add_reaction("\U0001F44C")
 
-				s = station.Station(playlist=self.playlist,waveLength="94.5")
-				fn = s.saveToFile()
-				station.Station(loadFromFile=fn)
-
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 				self.playlist.prepareNextSongs(1,override=True,verbose=self.verbose)
@@ -177,7 +173,15 @@ class DiscordClient(discord.Client):
 				self.VC = await message.author.voice.channel.connect()
 
 				await self.playNextSong(None)
-
+		elif cmd == "station":
+			if(len(args) > 1):
+				if(args[1] == "create"):
+					if(len(args) > 2):
+						Station(waveLength=args[2],verbose=self.verbose)
+					else:
+						Station(verbose=self.verbose)
+				else:
+					pass
 		elif cmd == "voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
 				self.voice = args[1]
