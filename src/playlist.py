@@ -1,10 +1,5 @@
-from __future__ import unicode_literals
-import youtube_dl
-from youtube_search import YoutubeSearch
 import os, sys
-import glob
 import dj
-from pydub import AudioSegment
 from globalSingleton import *
 
 from song import Song
@@ -35,7 +30,6 @@ class Playlist:
 	def insertSong(self,newSong,message,voice,fn,verbose=False):
 		self.songs.insert(0,newSong)
 		self.prepareNextSongs(1,verbose=verbose,override=True)
-		self.updateNextSongsGenres(1,verbose=verbose)
 		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
 
 	def prepareNextSongs(self, num=1, verbose=False, override=False):
