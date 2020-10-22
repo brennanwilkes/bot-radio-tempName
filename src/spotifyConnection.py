@@ -9,9 +9,12 @@ class SpotifyConnection:
 	id = ""
 	secret = ""
 	uri = ""
+	verbose = False
 
 	#Constructor
 	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri", verbose=False):
+
+		self.verbose = verbose
 
 		#Load ID
 		self.id = getTokenFromFile(ID_F)
@@ -20,9 +23,10 @@ class SpotifyConnection:
 		#Load URI
 		self.uri = getTokenFromFile(URI_F)
 
+	def connect(self):
 		#Connect
 		self.con = spotipy.Spotify(auth_manager=SpotifyOAuth(scope="user-library-read",redirect_uri=self.uri, client_id=self.id, client_secret=self.secret))
-		if(verbose):
+		if(self.verbose):
 			print("Succesfully connected to spotify ID "+self.id[:4]+("*"*len(self.id[4:])))
 
 	#Returns a JSON object of the search results
@@ -51,7 +55,10 @@ class SpotifyConnection:
 		track = result['tracks']['items'][0]
 		artist = self.con.artist(track["artists"][0]["external_urls"]["spotify"])
 		album = self.con.album(track["album"]["external_urls"]["spotify"])
-		return album["genres"] + artist["genres"]
+		genres = album["genres"] + artist["genres"]
+		if(len(genres) == 0):
+			genres.append("good music")
+		return genres
 
 	def getSong(self, query):
 		result = self.con.search(query)

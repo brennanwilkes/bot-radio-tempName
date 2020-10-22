@@ -1,5 +1,6 @@
 import sys
 
+
 PREFIX_PATH = sys.path[0]
 DEFAULT_TOKEN_PATH = PREFIX_PATH+"/auth/"
 

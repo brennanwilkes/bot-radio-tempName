@@ -8,7 +8,7 @@ from datetime import datetime
 from googleCloud import writeGoogleAudio, googleRadioVoices, googlePrimaryVoices
 
 from requireHeaders import PREFIX_PATH, commaSeparator
-
+from globalSingleton import *
 AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
 
 

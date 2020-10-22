@@ -2,6 +2,8 @@ import os
 
 from requireHeaders import PREFIX_PATH, getTokenFromFile
 from discordBot import DiscordClient
+from globalSingleton import *
+from spotifyConnection import SpotifyConnection
 
 #check for audioCache dir
 if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
@@ -11,6 +13,8 @@ if not os.path.isdir(PREFIX_PATH+"/../audioCache"):
 getTokenFromFile("google-cloud.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = PREFIX_PATH+"/auth/google-cloud.json"
 
+#Create spotify singleton
+spotifyConInstance.connect()
 
 botClient = DiscordClient()
 botClient.verbose = True

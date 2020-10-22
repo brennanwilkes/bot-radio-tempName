@@ -15,13 +15,13 @@ from requireHeaders import PREFIX_PATH
 import spotifyConnection as spot
 import playlist, song
 import dj
+from globalSingleton import *
 
 #Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
 
 #Discord client object
 class DiscordClient(discord.Client):
-	spotC = None
 	playlist = None
 	commandChar = "$"
 	VC = None
@@ -94,15 +94,15 @@ class DiscordClient(discord.Client):
 			self.currentSong = self.playlist.songs.pop(0)
 			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 			if(len(songGlobs) < 1):
-				self.currentSong.initSongData(verbose=self.verbose, override=True)
+				self.playlist.prepareNextSongs(1,verbose=self.verbose, override=True)
 				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
 
 			await self.change_presence(activity=discord.Game(name=self.currentSong.artists[0] + " - " + self.currentSong.name))
 			songURL = songGlobs[0]
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.initNextSongs(3,verbose=self.verbose)
-			self.playlist.updateNextSongsGenres(3,verbose=self.verbose,sp=self.spotC)
+			self.playlist.prepareNextSongs(3,verbose=self.verbose)
+			self.playlist.updateNextSongsGenres(3,verbose=self.verbose)
 
 			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
 
@@ -110,7 +110,7 @@ class DiscordClient(discord.Client):
 
 
 	async def on_ready(self):
-		self.spotC = spot.SpotifyConnection(verbose=self.verbose)
+		spotifyConInstance.verbose = self.verbose
 		#self.voice = random.choice(googlePrimaryVoices)
 		self.voice = "en-AU-Wavenet-B"
 		self.console('Logged on as {0}!'.format(self.user))
@@ -160,7 +160,7 @@ class DiscordClient(discord.Client):
 		elif cmd == "play":
 			await message.add_reaction("\U0001F4FB")
 			try:
-				self.playlist = playlist.Playlist(self.spotC.loadPlaylist(args[1]))
+				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[1]))
 			except Exception as e:
 				await message.channel.send("Invalid Playlist!")
 				self.console(e)
@@ -169,7 +169,7 @@ class DiscordClient(discord.Client):
 
 				random.shuffle(self.playlist.songs)
 				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
-				self.playlist.initNextSongs(1,override=True,verbose=self.verbose)
+				self.playlist.prepareNextSongs(1,override=True,verbose=self.verbose)
 
 				#connect to the voice channel that the person who wrote the message is in
 				if self.VC and (not self.VC == message.author.voice.channel):
@@ -197,11 +197,11 @@ class DiscordClient(discord.Client):
 					await message.add_reaction("\U0000260E")
 					await message.add_reaction("\U0001F44C")
 
-					req = song.Song(self.spotC.getSong(songReq))
+					req = song.Song(spotifyConInstance.getSong(songReq))
 					self.console("Found"+req.name)
 					await message.channel.send("Found song: "+req.name)
 
-					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
+					self.playlist.insertSong(req,message,self.voice,DJ_PATH,verbose=self.verbose)
 				except Exception as e:
 					await message.channel.send("Invalid Request")
 					self.console("Error "+str(e))

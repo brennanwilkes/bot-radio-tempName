@@ -5,6 +5,7 @@ import os, sys
 import glob
 import dj
 from pydub import AudioSegment
+from globalSingleton import *
 
 from song import Song
 from requireHeaders import PREFIX_PATH, commaSeparator
@@ -31,23 +32,21 @@ class Playlist:
 			self.songs.append(Song(songJSON["track"]))
 
 
-	def insertSong(self,newSong,sp,message,voice,fn,verbose=False):
+	def insertSong(self,newSong,message,voice,fn,verbose=False):
 		self.songs.insert(0,newSong)
-		self.initNextSongs(1,verbose=verbose,override=True)
-		self.updateNextSongsGenres(1,verbose=verbose,sp=sp)
+		self.prepareNextSongs(1,verbose=verbose,override=True)
+		self.updateNextSongsGenres(1,verbose=verbose)
 		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
 
-	def initNextSongs(self, num=1, verbose=False, override=False):
+	def prepareNextSongs(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
 			if(i >= len(self.songs)):
 				break
 
-			suc = self.songs[i].initSongData(verbose=verbose, override=override)
+			suc = self.songs[i].prepare(verbose=verbose, override=override)
 			if not suc:
 				self.songs.pop(i)
 
-	def updateNextSongsGenres(self, num=1, sp=None, verbose=False, override=False):
+	def updateNextSongsGenres(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
-			self.songs[i].genres = sp.getArtistGenres(self.songs[i].artists[0])
-			if(len(self.songs[i].genres) == 0):
-				self.songs[i].genres.append("good music")
+			self.songs[i].genres = spotifyConInstance.getArtistGenres(self.songs[i].artists[0])

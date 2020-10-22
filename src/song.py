@@ -4,7 +4,7 @@ import os, sys
 import glob
 import youtube_dl
 from pydub import AudioSegment
-
+from globalSingleton import *
 
 from requireHeaders import PREFIX_PATH, commaSeparator
 MAIN_PATH = PREFIX_PATH+"/.."
@@ -40,7 +40,7 @@ class Song:
 		self.genres = None
 
 
-	def initSongData(self,override=False,verbose=False):
+	def prepare(self,override=False,verbose=False):
 		if(self.youtubeID == None):
 			self.youtubeID = self.getYoutubeSearch()
 		if(self.youtubeID == "CANNOT_FIND_SONG"):
@@ -49,6 +49,7 @@ class Song:
 		self.fileName = MAIN_PATH+"/audioCache/"+self.youtubeID
 
 		return self.downloadAudio(override=override, verbose=verbose)
+
 
 
 	def getYoutubeSearch(self):
