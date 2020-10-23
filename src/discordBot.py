@@ -13,15 +13,37 @@ from googleCloud import googleRadioVoices, googlePrimaryVoices
 #Custom imports
 from requireHeaders import PREFIX_PATH
 import spotifyConnection as spot
-import playlist
+import playlist, song
 import dj
+from globalSingleton import *
+from station import Station
 
 #Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
 
-#Discord client object
+def parseCmdPrint(cmdChar,cmd):
+	build = cmdChar+" ".join([("["+cp[1:]+"]" if (cp[0]=="?" and not "|" in cp) else cp) for cp in cmd])
+	for arg in cmd:
+		if("|" in arg):
+			parts = arg.split("|")
+			buildParts = build.split(arg)
+
+			build = ""
+			for p in parts:
+				build += buildParts[0] + ("["+p[1:]+"]" if (p[0] == "?") else p) + buildParts[1]+"\n\t"
+			break
+
+	if(build[-2:] == "\n\t"):
+		build = build[:-2]
+	return build
+
+def cmdMatches(cmd,desired):
+	for p in range(len(desired)):
+		if(desired[p][0] != "?" and (cmd[p] if p>0 else cmd[p][1:]) != desired[p] ):
+			return False
+	return True
+
 class DiscordClient(discord.Client):
-	spotC = None
 	playlist = None
 	commandChar = "$"
 	VC = None
@@ -32,6 +54,161 @@ class DiscordClient(discord.Client):
 	defaultChannelName = "radio"
 	defaultChannel = None
 
+	async def cmdQueue(self,message=None,cmd=None,failed=False):
+		if not self.playlist or not self.currentSong:
+			await message.channel.send("Error! Playlist is empty")
+		else:
+			await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
+
+	async def cmdHelp(self,message=None,cmd=None,failed=False):
+		await message.channel.send("```Avalable commands:\n\t"+'\n\t'.join([parseCmdPrint(cmd[0][0],c[0]) for c in self.validCommands])+"```")
+
+	async def cmdVoice(self,message=None,cmd=None,failed=False):
+		if cmd[1] == "list":
+			await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+		elif cmd[1] in googleRadioVoices:
+			self.voice = cmd[1]
+			await message.channel.send("Voice set to "+self.voice)
+		else:
+			await message.channel.send("Invalid voice "+cmd[1])
+
+	async def cmdRequest(self,message=None,cmd=None,failed=False):
+		try:
+			songReq = " ".join(cmd[1:])
+			self.console("Requesting "+songReq)
+			await message.add_reaction("\U0000260E")
+			await message.add_reaction("\U0001F44C")
+
+			req = song.Song(spotifyConInstance.getSong(songReq))
+			self.console("Found "+req.name)
+			await message.channel.send("Found song: "+req.name)
+
+			self.playlist.insertSong(req,message,self.voice,DJ_PATH,verbose=self.verbose)
+		except Exception as e:
+			await message.channel.send("Invalid Request")
+			self.console("Error "+str(e))
+		else:
+			await message.channel.send("\U0000260E"+" "+req.name+" coming up next "+"\U0000260E")
+
+	async def cmdDie(self,message=None,cmd=None,failed=False):
+		if(self.VC):
+			await self.VC.disconnect()
+		await self.change_presence(activity=None)
+		await message.channel.send("Thank you for playing wing commander!")
+		await self.logout()
+
+	async def cmdPlay(self,message=None,cmd=None,failed=False,usage=None):
+		await message.add_reaction("\U0001F4FB")
+		reqStation = None
+		for s in stations:
+			if(cmd[1] == s.waveLength):
+				reqStation = s
+		if(reqStation):
+			self.playlist = reqStation
+			self.voice = self.playlist.host
+
+		else:
+			try:
+				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(cmd[1]))
+
+			except Exception as e:
+				await message.channel.send("Invalid Playlist!")
+				self.console(e)
+				return
+
+		await message.add_reaction("\U0001F44C")
+
+
+		random.shuffle(self.playlist.songs)
+		dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
+
+		self.playlist.prepareNextSongs(3,verbose=self.verbose)
+
+		self.console("Connecting to voice channel "+message.author.voice.channel.name)
+		#connect to the voice channel that the person who wrote the message is in
+		if self.VC and (not self.VC == message.author.voice.channel):
+			await self.VC.disconnect()
+		self.VC = await message.author.voice.channel.connect()
+
+		await self.playNextSong(None)
+
+	async def cmdStationCreate(self,message=None,cmd=None,failed=False,usage=None):
+		duplicate = False
+		for s in stations:
+			duplicate = duplicate or (cmd[2] == s.waveLength)
+		if(duplicate):
+			await message.channel.send("Wavelength "+cmd[2]+" already exists!")
+		else:
+			s = Station(waveLength=cmd[2],verbose=self.verbose,owner=message.author.nick)
+			stations.append(s)
+			await message.channel.send("Created station "+s.waveLength)
+
+	async def cmdStationAdd(self,message=None,cmd=None,failed=False,usage=None):
+		for s in stations:
+			if(s.waveLength == cmd[2]):
+				try:
+					addedPlaylist = playlist.Playlist(spotifyConInstance.loadPlaylist(cmd[3]))
+				except Exception as e:
+					await message.channel.send("Invalid Playlist!")
+					self.console(e)
+					return
+				else:
+					numAdded = s.addPlaylist(addedPlaylist,verbose=self.verbose)
+					s.saveToFile(verbose=self.verbose)
+					await message.channel.send("Added "+str(numAdded)+" songs to "+s.waveLength)
+					return
+		await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationName(self,message=None,cmd=None,failed=False,usage=None):
+		for s in stations:
+			if(s.waveLength == cmd[2]):
+				s.name = " ".join(cmd[3:])
+				s.saveToFile(verbose=self.verbose)
+				await message.channel.send("Named station "+cmd[2]+" "+" ".join(cmd[3:]))
+				return
+		await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationOwner(self,message=None,cmd=None,failed=False,usage=None):
+			for s in stations:
+				if(s.waveLength == cmd[2]):
+					s.owner = message.author.nick
+					await message.channel.send("Set station "+cmd[2]+" owner to "+message.author.nick)
+					s.saveToFile(verbose=self.verbose)
+					return
+			await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationList(self,message=None,cmd=None,failed=False,usage=None):
+			await message.channel.send("```Available stations:"+'\n'.join([s.waveLength+" | "+s.name for s in stations])+"```")
+
+	async def cmdStationVoice(self,message=None,cmd=None,failed=False,usage=None):
+			if cmd[3] in googleRadioVoices:
+				for s in stations:
+					if(s.waveLength == cmd[2]):
+						s.host = cmd[3]
+						s.saveToFile(verbose=self.verbose)
+						await message.channel.send("Station "+cmd[2]+" host voice set to "+self.voice)
+						return
+				await message.channel.send("Could not find station "+cmd[2])
+			else:
+				await message.channel.send("Invalid voice "+cmd[1])
+				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+
+	def __init__(self):
+		super(DiscordClient, self).__init__()
+		self.validCommands = [
+			[["help"],self.cmdHelp],
+			[["play","?playlist|station wavelength"],self.cmdPlay],
+			[["queue"],self.cmdQueue],
+			[["station","create","?wavelength"],self.cmdStationCreate],
+			[["station","add","?wavelength","?playlist|?song|?station"],self.cmdStationAdd],
+			[["station","name","?wavelength","?name"],self.cmdStationName],
+			[["station","voice","?wavelength","?voice"],self.cmdStationVoice],
+			[["station","owner","?wavelength"],self.cmdStationOwner],
+			[["station","list"],self.cmdStationList],
+			[["voice","?voice|list"],self.cmdVoice],
+			[["request","?song"],self.cmdRequest],
+			[["die"],self.cmdDie],
+		]
 
 	'''
 	#not implemented yet
@@ -91,18 +268,14 @@ class DiscordClient(discord.Client):
 		if(self.mode == 0):
 			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
 		else:
-			self.currentSong = self.playlist.songs.pop(0)
-			songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
-			if(len(songGlobs) < 1):
-				self.currentSong.downloadAudio(verbose=self.verbose, override=True)
-				songGlobs = glob.glob(PREFIX_PATH+"/../audioCache/"+self.currentSong.youtubeID+".*")
+
+			self.currentSong = self.playlist.getNextSong()
 
 			await self.change_presence(activity=discord.Game(name=self.currentSong.artists[0] + " - " + self.currentSong.name))
-			songURL = songGlobs[0]
+			songURL = self.currentSong.getAudioFilename()
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.downloadNextSongs(3,verbose=self.verbose)
-			self.playlist.updateNextSongsGenres(3,verbose=self.verbose,sp=self.spotC)
+			self.playlist.prepareNextSongs(3,verbose=self.verbose)
 
 			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
 
@@ -110,7 +283,7 @@ class DiscordClient(discord.Client):
 
 
 	async def on_ready(self):
-		self.spotC = spot.SpotifyConnection(verbose=self.verbose)
+		spotifyConInstance.verbose = self.verbose
 		#self.voice = random.choice(googlePrimaryVoices)
 		self.voice = "en-AU-Wavenet-B"
 		self.console('Logged on as {0}!'.format(self.user))
@@ -123,9 +296,6 @@ class DiscordClient(discord.Client):
 					self.console("Found default text channel "+channel.name)
 		if(self.defaultChannel):
 			await self.defaultChannel.send("Bot ready to rock and roll")
-
-
-
 		await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move"))
 
 
@@ -151,76 +321,21 @@ class DiscordClient(discord.Client):
 		args = message.content.split(" ")
 		cmd = args[0][1:]
 
-		if cmd == "queue":
-			if not self.playlist or not self.currentSong:
-				await message.channel.send("Error! Playlist is empty")
-			else:
-				await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
-
-		elif cmd == "play":
-			await message.add_reaction("\U0001F4FB")
-			try:
-				self.playlist = playlist.Playlist(self.spotC.loadPlaylist(args[1]))
-			except Exception as e:
-				await message.channel.send("Invalid Playlist!")
-				self.console(e)
-			else:
-				await message.add_reaction("\U0001F44C")
-
-				random.shuffle(self.playlist.songs)
-				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
-				self.playlist.downloadNextSongs(1,override=True,verbose=self.verbose)
-
-				#connect to the voice channel that the person who wrote the message is in
-				if self.VC and (not self.VC == message.author.voice.channel):
-					await self.VC.disconnect()
-				self.VC = await message.author.voice.channel.connect()
-
-				await self.playNextSong(None)
-
-		elif cmd == "voice":
-			if len(args) > 1 and args[1] in googleRadioVoices:
-				self.voice = args[1]
-				await message.channel.send("Voice set to "+self.voice)
-			else:
-				if(len(args) > 1):
-					await message.channel.send("Invalid voice "+args[1])
-				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
-
-		elif cmd == "request":
-			if(len(args)<2):
-				await message.channel.send("Please type a song name after $request")
-			else:
-				try:
-					songReq = " ".join(args[1:])
-					self.console("Requesting "+songReq)
-					await message.add_reaction("\U0000260E")
-					await message.add_reaction("\U0001F44C")
-
-					req = playlist.Song(self.spotC.getSong(songReq))
-					self.console("Found"+req.name)
-					await message.channel.send("Found song: "+req.name)
-
-					self.playlist.insertSong(req,self.spotC,message,self.voice,DJ_PATH,verbose=self.verbose)
-				except Exception as e:
-					await message.channel.send("Invalid Request")
-					self.console("Error "+str(e))
+		foundCmd = False
+		foundRootCmd = False
+		usageMessage = "```Usage:"
+		for validCmd in self.validCommands:
+			if(cmd == validCmd[0][0]):
+				foundRootCmd = True
+				if(len(args) < len(validCmd[0]) or not cmdMatches(args,validCmd[0])):
+					usageMessage += "\n\t"+parseCmdPrint(args[0][0],validCmd[0])
 				else:
-					await message.channel.send("\U0000260E"+" "+req.name+" coming up next "+"\U0000260E")
-
-		elif cmd == "die":
-			if(self.VC):
-				await self.VC.disconnect()
-			await self.change_presence(activity=None)
-			await message.channel.send("Thank you for playing wing commander!")
-			await self.logout()
-
-		elif cmd == "help":
-			await message.channel.send('''```Commands:
-			$help
-			$play [playlist]
-			$queue
-			$voice
-			$voice [voice]```''')
+					await validCmd[1](message=message,cmd=args)
+					foundCmd = True
+					break
+		if(not foundRootCmd):
+			await message.channel.send("```Invalid command '"+cmd+"'\ntry '"+self.commandChar+"help'```")
+		elif(not foundCmd):
+			await message.channel.send(usageMessage+"```")
 
 		self.console('Message from {0.author}: {0.content}'.format(message))
