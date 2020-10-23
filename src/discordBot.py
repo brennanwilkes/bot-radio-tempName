@@ -155,33 +155,58 @@ class DiscordClient(discord.Client):
 
 		elif cmd == "play":
 			await message.add_reaction("\U0001F4FB")
-			try:
-				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[1]))
-			except Exception as e:
-				await message.channel.send("Invalid Playlist!")
-				self.console(e)
+
+			reqStation = None
+			if(len(args) > 1):
+				for s in stations:
+					if(args[1] == s.waveLength):
+						reqStation = s
+			if(reqStation):
+				self.playlist = reqStation
 			else:
-				await message.add_reaction("\U0001F44C")
+				try:
+					self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[1]))
+				except Exception as e:
+					await message.channel.send("Invalid Playlist!")
+					self.console(e)
+					return
 
-				random.shuffle(self.playlist.songs)
-				dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
-				self.playlist.prepareNextSongs(1,override=True,verbose=self.verbose)
+			await message.add_reaction("\U0001F44C")
 
-				#connect to the voice channel that the person who wrote the message is in
-				if self.VC and (not self.VC == message.author.voice.channel):
-					await self.VC.disconnect()
-				self.VC = await message.author.voice.channel.connect()
+			random.shuffle(self.playlist.songs)
+			dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
+			self.playlist.prepareNextSongs(1,override=True,verbose=self.verbose)
 
-				await self.playNextSong(None)
+			#connect to the voice channel that the person who wrote the message is in
+			if self.VC and (not self.VC == message.author.voice.channel):
+				await self.VC.disconnect()
+			self.VC = await message.author.voice.channel.connect()
+
+			await self.playNextSong(None)
 		elif cmd == "station":
 			if(len(args) > 1):
 				if(args[1] == "create"):
 					if(len(args) > 2):
-						Station(waveLength=args[2],verbose=self.verbose)
+						duplicate = False
+						for s in stations:
+							duplicate = duplicate or (args[2] == s.waveLength)
+						if(duplicate):
+							await message.channel.send("Wavelength "+args[2]+" already exists!")
+						else:
+							s = Station(waveLength=args[2],verbose=self.verbose)
+							stations.append(s)
+							await message.channel.send("Created station "+s.waveLength)
 					else:
-						Station(verbose=self.verbose, playlist=self.playlist)
+						await message.channel.send("Please provide a station wavelength ex. '94.5'")
+				elif(args[1] == "add"):
+					if(len(args) > 2):
+						pass
+					else:
+						await message.channel.send("Please provide a spotify link or song name to add")
 				else:
-					pass
+					await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+
+
 		elif cmd == "voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
 				self.voice = args[1]

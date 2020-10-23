@@ -10,10 +10,15 @@ MAIN_PATH = PREFIX_PATH+"/.."
 
 class Station:
 
-	def __init__(self, loadFromFile=None, playlistJSON=None, playlist=None, station=None, host="en-AU-Wavenet-B", waveLength="100.0", verbose=False):
+	def __init__(self, loadFromFile=None, playlistJSON=None, playlist=None, station=None, host="en-AU-Wavenet-B", waveLength="100.0", verbose=False, owner="", name=None):
 		self.songs = []
 		self.host = host
 		self.waveLength = waveLength
+		if(name):
+			self.name = name
+		else:
+			self.name = "GCS "+waveLength
+		self.owner = owner
 
 		if(playlistJSON):
 			self.addPlaylistJSON(playlistJSON)
