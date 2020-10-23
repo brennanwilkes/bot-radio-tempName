@@ -12,6 +12,7 @@ class Station:
 
 	def __init__(self, loadFromFile=None, playlistJSON=None, playlist=None, station=None, host="en-AU-Wavenet-B", waveLength="100.0", verbose=False, owner="", name=None):
 		self.songs = []
+		self.requests = []
 		self.host = host
 		self.waveLength = waveLength
 		if(name):
@@ -81,6 +82,11 @@ class Station:
 
 		self.saveToFile(verbose=verbose)
 
+	def insertSong(self,newSong,message,voice,fn,verbose=False):
+		self.requests.insert(0,newSong)
+		self.requests[0].prepare(verbose=verbose)
+		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
+
 
 	def saveToFile(self,filename=None,verbose=False):
 		if(not filename): filename = MAIN_PATH+"/stations/station"+self.waveLength+".json"
@@ -95,3 +101,11 @@ class Station:
 
 		if(verbose): print("Station saved to "+filename)
 		return filename
+
+	def getNextSong(self):
+		if(len(self.requests) > 0):
+			return self.requests.pop(0)
+		else:
+			next = self.songs.pop(0)
+			self.songs.append(next)
+			return next

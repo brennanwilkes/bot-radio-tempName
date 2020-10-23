@@ -41,3 +41,6 @@ class Playlist:
 			suc = self.songs[i].prepare(verbose=verbose, override=override)
 			if not suc:
 				self.songs.pop(i)
+
+	def getNextSong(self):
+		return self.songs.pop(0)

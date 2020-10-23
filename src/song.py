@@ -98,7 +98,7 @@ class Song:
 		if(verbose):
 			print("Querying youtube for:",search)
 
-		query = YoutubeSearch(search, max_results=1).to_dict()
+		query = YoutubeSearch(search).to_dict()
 
 		if(query == None or len(query) < 1):
 			if(verbose):

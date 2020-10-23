@@ -269,8 +269,7 @@ class DiscordClient(discord.Client):
 			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
 		else:
 
-			self.currentSong = self.playlist.songs.pop(0)
-			self.playlist.songs.append(self.currentSong)
+			self.currentSong = self.playlist.getNextSong()
 
 			await self.change_presence(activity=discord.Game(name=self.currentSong.artists[0] + " - " + self.currentSong.name))
 			songURL = self.currentSong.getAudioFilename()
