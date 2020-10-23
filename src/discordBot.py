@@ -21,7 +21,24 @@ from station import Station
 #Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
 
-#Discord client object
+def parseCmdPrint(cmdChar,cmd):
+	build = cmdChar+" ".join([("["+cp[1:]+"]" if (cp[0]=="?" and not "|" in cp) else cp) for cp in cmd])
+	for arg in cmd:
+		if("|" in arg):
+			optional = (arg[0] == "?")
+			parts = arg.replace("?","").split("|")
+			buildParts = build.split(arg)
+
+			build = ""
+			for p in parts:
+				build += buildParts[0] + ("["+p+"]" if optional else p) + buildParts[1]+"\n\t"
+			break
+
+	if(build[-2:] == "\n\t"):
+		build = build[:-2]
+	return build
+
+
 class DiscordClient(discord.Client):
 	playlist = None
 	commandChar = "$"
@@ -33,6 +50,32 @@ class DiscordClient(discord.Client):
 	defaultChannelName = "radio"
 	defaultChannel = None
 
+	async def cmdQueue(self,message=None,cmd=None,failed=False):
+		if not self.playlist or not self.currentSong:
+			await message.channel.send("Error! Playlist is empty")
+		else:
+			await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
+
+	async def cmdHelp(self,message=None,cmd=None,failed=False):
+		await message.channel.send("```Avalable commands:\n\t"+'\n\t'.join([parseCmdPrint(cmd[0][0],c[0]) for c in self.validCommands])+"```")
+
+	async def cmdPlay(self,message=None,cmd=None,failed=False):
+		pass
+
+	def __init__(self):
+		super(DiscordClient, self).__init__()
+		self.validCommands = [
+			[["help"],self.cmdHelp],
+			[["play","?playlist|station wavelength"],self.cmdPlay],
+			[["queue"],self.cmdQueue],
+			[["station","create","?wavelength"],self.cmdHelp],
+			[["station","add","?wavelength","?playlist|song|station"],self.cmdHelp],
+			[["station","name","?wavelength","?name"],self.cmdHelp],
+			[["station","voice","?wavelength","?voice"],self.cmdHelp],
+			[["station","list"],self.cmdHelp],
+			[["voice","?voice"],self.cmdHelp],
+			[["voice","list"],self.cmdHelp]
+		]
 
 	'''
 	#not implemented yet
@@ -148,6 +191,10 @@ class DiscordClient(discord.Client):
 
 		args = message.content.split(" ")
 		cmd = args[0][1:]
+
+		for validCmd in self.validCommands:
+			if(cmd == validCmd[0][0]):
+				await validCmd[1](message=message,cmd=args,failed=(len(args) != len(validCmd[0])))
 
 		if cmd == "queue" or cmd == "q":
 			if not self.playlist or not self.currentSong:
