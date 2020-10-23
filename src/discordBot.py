@@ -25,13 +25,12 @@ def parseCmdPrint(cmdChar,cmd):
 	build = cmdChar+" ".join([("["+cp[1:]+"]" if (cp[0]=="?" and not "|" in cp) else cp) for cp in cmd])
 	for arg in cmd:
 		if("|" in arg):
-			optional = (arg[0] == "?")
-			parts = arg.replace("?","").split("|")
+			parts = arg.split("|")
 			buildParts = build.split(arg)
 
 			build = ""
 			for p in parts:
-				build += buildParts[0] + ("["+p+"]" if optional else p) + buildParts[1]+"\n\t"
+				build += buildParts[0] + ("["+p[1:]+"]" if (p[0] == "?") else p) + buildParts[1]+"\n\t"
 			break
 
 	if(build[-2:] == "\n\t"):
@@ -64,10 +63,42 @@ class DiscordClient(discord.Client):
 	async def cmdHelp(self,message=None,cmd=None,failed=False):
 		await message.channel.send("```Avalable commands:\n\t"+'\n\t'.join([parseCmdPrint(cmd[0][0],c[0]) for c in self.validCommands])+"```")
 
+	async def cmdVoice(self,message=None,cmd=None,failed=False):
+		if cmd[1] == "list":
+			await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+		elif cmd[1] in googleRadioVoices:
+			self.voice = cmd[1]
+			await message.channel.send("Voice set to "+self.voice)
+		else:
+			await message.channel.send("Invalid voice "+cmd[1])
+
+	async def cmdRequest(self,message=None,cmd=None,failed=False):
+		try:
+			songReq = " ".join(cmd[1:])
+			self.console("Requesting "+songReq)
+			await message.add_reaction("\U0000260E")
+			await message.add_reaction("\U0001F44C")
+
+			req = song.Song(spotifyConInstance.getSong(songReq))
+			self.console("Found "+req.name)
+			await message.channel.send("Found song: "+req.name)
+
+			self.playlist.insertSong(req,message,self.voice,DJ_PATH,verbose=self.verbose)
+		except Exception as e:
+			await message.channel.send("Invalid Request")
+			self.console("Error "+str(e))
+		else:
+			await message.channel.send("\U0000260E"+" "+req.name+" coming up next "+"\U0000260E")
+
+	async def cmdDie(self,message=None,cmd=None,failed=False):
+		if(self.VC):
+			await self.VC.disconnect()
+		await self.change_presence(activity=None)
+		await message.channel.send("Thank you for playing wing commander!")
+		await self.logout()
+
 	async def cmdPlay(self,message=None,cmd=None,failed=False,usage=None):
-
 		await message.add_reaction("\U0001F4FB")
-
 		reqStation = None
 		for s in stations:
 			if(cmd[1] == s.waveLength):
@@ -91,7 +122,7 @@ class DiscordClient(discord.Client):
 		random.shuffle(self.playlist.songs)
 		dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 
-		self.playlist.prepareNextSongs(3,override=True,verbose=self.verbose)
+		self.playlist.prepareNextSongs(3,verbose=self.verbose)
 
 		self.console("Connecting to voice channel "+message.author.voice.channel.name)
 		#connect to the voice channel that the person who wrote the message is in
@@ -169,13 +200,14 @@ class DiscordClient(discord.Client):
 			[["play","?playlist|station wavelength"],self.cmdPlay],
 			[["queue"],self.cmdQueue],
 			[["station","create","?wavelength"],self.cmdStationCreate],
-			[["station","add","?wavelength","?playlist|song|station"],self.cmdStationAdd],
+			[["station","add","?wavelength","?playlist|?song|?station"],self.cmdStationAdd],
 			[["station","name","?wavelength","?name"],self.cmdStationName],
 			[["station","voice","?wavelength","?voice"],self.cmdStationVoice],
 			[["station","owner","?wavelength"],self.cmdStationOwner],
 			[["station","list"],self.cmdStationList],
-			[["voice","?voice"],self.cmdHelp],
-			[["voice","list"],self.cmdHelp]
+			[["voice","?voice|list"],self.cmdVoice],
+			[["request","?song"],self.cmdRequest],
+			[["die"],self.cmdDie],
 		]
 
 	'''
@@ -265,9 +297,6 @@ class DiscordClient(discord.Client):
 					self.console("Found default text channel "+channel.name)
 		if(self.defaultChannel):
 			await self.defaultChannel.send("Bot ready to rock and roll")
-
-
-
 		await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move"))
 
 
@@ -294,59 +323,20 @@ class DiscordClient(discord.Client):
 		cmd = args[0][1:]
 
 		foundCmd = False
+		foundRootCmd = False
 		usageMessage = "```Usage:"
 		for validCmd in self.validCommands:
 			if(cmd == validCmd[0][0]):
-				if(len(args) != len(validCmd[0]) or not cmdMatches(args,validCmd[0])):
+				foundRootCmd = True
+				if(len(args) < len(validCmd[0]) or not cmdMatches(args,validCmd[0])):
 					usageMessage += "\n\t"+parseCmdPrint(args[0][0],validCmd[0])
 				else:
 					await validCmd[1](message=message,cmd=args)
 					foundCmd = True
 					break
-		if(not foundCmd):
+		if(not foundRootCmd):
+			await message.channel.send("```Invalid command '"+cmd+"'\ntry '"+self.commandChar+"help'```")
+		elif(not foundCmd):
 			await message.channel.send(usageMessage+"```")
-
-		if cmd == "station":
-			pass
-
-		elif cmd == "voice":
-			if len(args) > 1 and args[1] in googleRadioVoices:
-				self.voice = args[1]
-				await message.channel.send("Voice set to "+self.voice)
-			else:
-				if(len(args) > 1):
-					await message.channel.send("Invalid voice "+args[1])
-				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
-
-		elif cmd == "request":
-			if(len(args)<2):
-				await message.channel.send("Please type a song name after "+self.commandChar+"request")
-			else:
-				try:
-					songReq = " ".join(args[1:])
-					self.console("Requesting "+songReq)
-					await message.add_reaction("\U0000260E")
-					await message.add_reaction("\U0001F44C")
-
-					req = song.Song(spotifyConInstance.getSong(songReq))
-					self.console("Found"+req.name)
-					await message.channel.send("Found song: "+req.name)
-
-					self.playlist.insertSong(req,message,self.voice,DJ_PATH,verbose=self.verbose)
-				except Exception as e:
-					await message.channel.send("Invalid Request")
-					self.console("Error "+str(e))
-				else:
-					await message.channel.send("\U0000260E"+" "+req.name+" coming up next "+"\U0000260E")
-
-		elif cmd == "die":
-			if(self.VC):
-				await self.VC.disconnect()
-			await self.change_presence(activity=None)
-			await message.channel.send("Thank you for playing wing commander!")
-			await self.logout()
-		else:
-			await message.channel.send("Unknown command "+cmd)
-
 
 		self.console('Message from {0.author}: {0.content}'.format(message))
