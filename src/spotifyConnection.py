@@ -9,10 +9,10 @@ class SpotifyConnection:
 	id = ""
 	secret = ""
 	uri = ""
-	verbose = False
+	verbose = True
 
 	#Constructor
-	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri", verbose=False):
+	def __init__(self, ID_F = "id", SECRET_F = "secret", URI_F = "uri", verbose=True):
 
 		self.verbose = verbose
 
@@ -51,6 +51,10 @@ class SpotifyConnection:
 		return self.con.playlist("spotify:playlist:"+playlistID)
 
 	def getArtistGenres(self, artist):
+
+		if(self.verbose):
+			print("Searching for genres for "+artist)
+
 		result = self.con.search(artist)
 		track = result['tracks']['items'][0]
 		artist = self.con.artist(track["artists"][0]["external_urls"]["spotify"])

@@ -1,5 +1,5 @@
 import os, sys
-import pickle
+import pickle, json
 import dj
 from globalSingleton import *
 
@@ -52,10 +52,14 @@ class Station:
 				self.songs.pop(i)
 
 	def saveToFile(self,filename=None):
-		if(not filename): filename = MAIN_PATH+"/stations/station"+self.waveLength+".STATION"
+		if(not filename): filename = MAIN_PATH+"/stations/station"+self.waveLength+".json"
 
-		f = open(filename, 'ab')
-		pickle.dump(self, f)
+		serial = self.__dict__
+		for s in range(len(serial["songs"])):
+			serial["songs"][s] = serial["songs"][s].__dict__
+
+		f = open(filename, 'w')
+		f.write(json.dumps(serial,indent=4))
 		f.close()
 
 		return filename

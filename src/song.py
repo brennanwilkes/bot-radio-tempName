@@ -55,7 +55,7 @@ class Song:
 
 	def prepare(self,override=False,verbose=False):
 		if(self.youtubeID == None):
-			self.youtubeID = self.getYoutubeSearch()
+			self.youtubeID = self.getYoutubeSearch(verbose=verbose)
 		if(self.youtubeID == "CANNOT_FIND_SONG"):
 			return False
 		if(not self.genres):
@@ -68,8 +68,12 @@ class Song:
 	def getAudioFilename(self):
 		return self.fileName + "." + self.extension
 
-	def getYoutubeSearch(self):
+	def getYoutubeSearch(self,verbose=False):
+
 		search = self.name + " by " + commaSeparator(self.artists) + " audio official song"
+
+		if(verbose):
+			print("Querying youtube for:",search)
 
 		query = YoutubeSearch(search, max_results=1).to_dict()
 
@@ -78,6 +82,9 @@ class Song:
 		return query[0]["id"]
 
 	def downloadAudio(self,override=False,verbose=False):
+
+		if(verbose):
+			print("Loading audio:",self.name)
 
 		if (not override) and glob.glob(self.fileName+".*") and (not glob.glob(self.fileName+".NA")) and (not glob.glob(self.fileName+".part")):
 			if(verbose):
@@ -89,10 +96,6 @@ class Song:
 				return False
 
 			return True
-
-		if(verbose):
-			print("Loading audio:",self.name)
-
 
 		ydl_opts = {
 			"format": "bestaudio/best",

@@ -179,7 +179,7 @@ class DiscordClient(discord.Client):
 					if(len(args) > 2):
 						Station(waveLength=args[2],verbose=self.verbose)
 					else:
-						Station(verbose=self.verbose)
+						Station(verbose=self.verbose, playlist=self.playlist)
 				else:
 					pass
 		elif cmd == "voice":
