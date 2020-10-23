@@ -38,6 +38,11 @@ def parseCmdPrint(cmdChar,cmd):
 		build = build[:-2]
 	return build
 
+def cmdMatches(cmd,desired):
+	for p in range(len(desired)):
+		if(desired[p][0] != "?" and (cmd[p] if p>0 else cmd[p][1:]) != desired[p] ):
+			return False
+	return True
 
 class DiscordClient(discord.Client):
 	playlist = None
@@ -64,17 +69,16 @@ class DiscordClient(discord.Client):
 		await message.add_reaction("\U0001F4FB")
 
 		reqStation = None
-		if(len(args) > 1):
-			for s in stations:
-				if(args[1] == s.waveLength):
-					reqStation = s
+		for s in stations:
+			if(cmd[1] == s.waveLength):
+				reqStation = s
 		if(reqStation):
 			self.playlist = reqStation
 			self.voice = self.playlist.host
 
 		else:
 			try:
-				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[1]))
+				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(cmd[1]))
 
 			except Exception as e:
 				await message.channel.send("Invalid Playlist!")
@@ -97,17 +101,79 @@ class DiscordClient(discord.Client):
 
 		await self.playNextSong(None)
 
+	async def cmdStationCreate(self,message=None,cmd=None,failed=False,usage=None):
+		duplicate = False
+		for s in stations:
+			duplicate = duplicate or (cmd[2] == s.waveLength)
+		if(duplicate):
+			await message.channel.send("Wavelength "+cmd[2]+" already exists!")
+		else:
+			s = Station(waveLength=cmd[2],verbose=self.verbose,owner=message.author.nick)
+			stations.append(s)
+			await message.channel.send("Created station "+s.waveLength)
+
+	async def cmdStationAdd(self,message=None,cmd=None,failed=False,usage=None):
+		for s in stations:
+			if(s.waveLength == cmd[2]):
+				try:
+					addedPlaylist = playlist.Playlist(spotifyConInstance.loadPlaylist(cmd[3]))
+				except Exception as e:
+					await message.channel.send("Invalid Playlist!")
+					self.console(e)
+					return
+				else:
+					numAdded = s.addPlaylist(addedPlaylist,verbose=self.verbose)
+					s.saveToFile(verbose=self.verbose)
+					await message.channel.send("Added "+str(numAdded)+" songs to "+s.waveLength)
+					return
+		await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationName(self,message=None,cmd=None,failed=False,usage=None):
+		for s in stations:
+			if(s.waveLength == cmd[2]):
+				s.name = " ".join(cmd[3:])
+				s.saveToFile(verbose=self.verbose)
+				await message.channel.send("Named station "+cmd[2]+" "+" ".join(cmd[3:]))
+				return
+		await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationOwner(self,message=None,cmd=None,failed=False,usage=None):
+			for s in stations:
+				if(s.waveLength == cmd[2]):
+					s.owner = message.author.nick
+					await message.channel.send("Set station "+cmd[2]+" owner to "+message.author.nick)
+					s.saveToFile(verbose=self.verbose)
+					return
+			await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationList(self,message=None,cmd=None,failed=False,usage=None):
+			await message.channel.send("```Available stations:"+'\n'.join([s.waveLength+" | "+s.name for s in stations])+"```")
+
+	async def cmdStationVoice(self,message=None,cmd=None,failed=False,usage=None):
+			if cmd[3] in googleRadioVoices:
+				for s in stations:
+					if(s.waveLength == cmd[2]):
+						s.host = cmd[3]
+						s.saveToFile(verbose=self.verbose)
+						await message.channel.send("Station "+cmd[2]+" host voice set to "+self.voice)
+						return
+				await message.channel.send("Could not find station "+cmd[2])
+			else:
+				await message.channel.send("Invalid voice "+cmd[1])
+				await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+
 	def __init__(self):
 		super(DiscordClient, self).__init__()
 		self.validCommands = [
 			[["help"],self.cmdHelp],
 			[["play","?playlist|station wavelength"],self.cmdPlay],
 			[["queue"],self.cmdQueue],
-			[["station","create","?wavelength"],self.cmdHelp],
-			[["station","add","?wavelength","?playlist|song|station"],self.cmdHelp],
-			[["station","name","?wavelength","?name"],self.cmdHelp],
-			[["station","voice","?wavelength","?voice"],self.cmdHelp],
-			[["station","list"],self.cmdHelp],
+			[["station","create","?wavelength"],self.cmdStationCreate],
+			[["station","add","?wavelength","?playlist|song|station"],self.cmdStationAdd],
+			[["station","name","?wavelength","?name"],self.cmdStationName],
+			[["station","voice","?wavelength","?voice"],self.cmdStationVoice],
+			[["station","owner","?wavelength"],self.cmdStationOwner],
+			[["station","list"],self.cmdStationList],
 			[["voice","?voice"],self.cmdHelp],
 			[["voice","list"],self.cmdHelp]
 		]
@@ -227,133 +293,21 @@ class DiscordClient(discord.Client):
 		args = message.content.split(" ")
 		cmd = args[0][1:]
 
+		foundCmd = False
+		usageMessage = "```Usage:"
 		for validCmd in self.validCommands:
 			if(cmd == validCmd[0][0]):
-				if(len(args) != len(validCmd[0])):
-					await message.channel.send("```Usage:\n\t"+parseCmdPrint(args[0][0],validCmd[0])+"```")
+				if(len(args) != len(validCmd[0]) or not cmdMatches(args,validCmd[0])):
+					usageMessage += "\n\t"+parseCmdPrint(args[0][0],validCmd[0])
 				else:
 					await validCmd[1](message=message,cmd=args)
+					foundCmd = True
+					break
+		if(not foundCmd):
+			await message.channel.send(usageMessage+"```")
 
-		if cmd == "queue" or cmd == "q":
-			if not self.playlist or not self.currentSong:
-				await message.channel.send("Error! Playlist is empty")
-			else:
-				await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
-
-		elif cmd == "play" or cmd =="p":
-			await message.add_reaction("\U0001F4FB")
-
-			reqStation = None
-			if(len(args) > 1):
-				for s in stations:
-					if(args[1] == s.waveLength):
-						reqStation = s
-			if(reqStation):
-				self.playlist = reqStation
-				self.voice = self.playlist.host
-
-			else:
-				try:
-					self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[1]))
-
-				except Exception as e:
-					await message.channel.send("Invalid Playlist!")
-					self.console(e)
-					return
-
-			await message.add_reaction("\U0001F44C")
-
-
-			random.shuffle(self.playlist.songs)
-			dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
-
-			self.playlist.prepareNextSongs(3,override=True,verbose=self.verbose)
-
-			self.console("Connecting to voice channel "+message.author.voice.channel.name)
-			#connect to the voice channel that the person who wrote the message is in
-			if self.VC and (not self.VC == message.author.voice.channel):
-				await self.VC.disconnect()
-			self.VC = await message.author.voice.channel.connect()
-
-			await self.playNextSong(None)
-		elif cmd == "station":
-			if(len(args) > 1):
-				if(args[1] == "create"):
-					if(len(args) > 2):
-						duplicate = False
-						for s in stations:
-							duplicate = duplicate or (args[2] == s.waveLength)
-						if(duplicate):
-							await message.channel.send("Wavelength "+args[2]+" already exists!")
-						else:
-							s = Station(waveLength=args[2],verbose=self.verbose,owner=message.author.nick)
-							stations.append(s)
-							await message.channel.send("Created station "+s.waveLength)
-					else:
-						await message.channel.send("Please provide a station wavelength ex. '94.5'")
-				elif(args[1] == "add"):
-					if(len(args) > 3):
-						for s in stations:
-							if(s.waveLength == args[2]):
-								try:
-									addedPlaylist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[3]))
-								except Exception as e:
-									await message.channel.send("Invalid Playlist!")
-									self.console(e)
-									return
-								else:
-									numAdded = s.addPlaylist(addedPlaylist,verbose=self.verbose)
-									s.saveToFile(verbose=self.verbose)
-									await message.channel.send("Added "+str(numAdded)+" songs to "+s.waveLength)
-									return
-						await message.channel.send("Could not find station "+args[2])
-					else:
-						await message.channel.send("Invalid form. Please use:\n"+self.commandChar+"station add [wavelength] [playlist]\nin order to add spotify songs to a station")
-				elif(args[1] == "name"):
-					if(len(args) > 3):
-						for s in stations:
-							if(s.waveLength == args[2]):
-								s.name = " ".join(args[3:])
-								s.saveToFile(verbose=self.verbose)
-								await message.channel.send("Named station "+args[2]+" "+" ".join(args[3:]))
-								return
-						await message.channel.send("Could not find station "+args[2])
-					else:
-						await message.channel.send("Invalid form. Please use:\n"+self.commandChar+"station name [wavelength] [name]\nin order to name a station")
-				elif(args[1] == "owner"):
-					if(len(args) > 2):
-						for s in stations:
-							if(s.waveLength == args[2]):
-								s.owner = message.author.nick
-								await message.channel.send("Set station "+args[2]+" owner to "+message.author.nick)
-								s.saveToFile(verbose=self.verbose)
-								return
-						await message.channel.send("Could not find station "+args[2])
-					else:
-						await message.channel.send("Invalid form. Please use:\n"+self.commandChar+"station owner [wavelength]\nin order to take ownership of a station")
-				elif(args[1] == "list"):
-					await message.channel.send("```Available stations:"+'\n'.join([s.waveLength+" | "+s.name for s in stations])+"```")
-				elif(args[1] == "voice" or args[1] == "host"):
-					if len(args) > 3 and args[3] in googleRadioVoices:
-						for s in stations:
-							if(s.waveLength == args[2]):
-								s.host = args[3]
-								s.saveToFile(verbose=self.verbose)
-								await message.channel.send("Station "+args[2]+" host voice set to "+self.voice)
-								return
-						await message.channel.send("Could not find station "+args[2])
-					else:
-						if(len(args) > 1):
-							await message.channel.send("Invalid voice "+args[1])
-						await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
-			else:
-				await message.channel.send('''```Station Commands:
-				$station create [wavelength]
-				$station add [wavelength] [playlist]
-				$station name [wavelength] [name]
-				$station voice [wavelength] [voice]
-				$station owner [wavelength]
-				$station list```''')
+		if cmd == "station":
+			pass
 
 		elif cmd == "voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
@@ -391,21 +345,6 @@ class DiscordClient(discord.Client):
 			await self.change_presence(activity=None)
 			await message.channel.send("Thank you for playing wing commander!")
 			await self.logout()
-
-		elif cmd == "help":
-			await message.channel.send('''```Commands:
-			$help
-			$play [playlist]
-			$play [station wavelength]
-			$queue
-			$station create [wavelength]
-			$station add [wavelength] [playlist]
-			$station name [wavelength] [name]
-			$station voice [wavelength] [voice]
-			$station owner [wavelength]
-			$station list
-			$voice
-			$voice [voice]```''')
 		else:
 			await message.channel.send("Unknown command "+cmd)
 
