@@ -1,10 +1,12 @@
 from __future__ import unicode_literals
-from youtube_search import YoutubeSearch
 import os, sys
 import glob
 import youtube_dl
 from pydub import AudioSegment
 from globalSingleton import *
+
+import urllib.parse
+import requests
 
 from requireHeaders import PREFIX_PATH, commaSeparator
 MAIN_PATH = PREFIX_PATH+"/.."
@@ -98,18 +100,24 @@ class Song:
 		if(verbose):
 			print("Querying youtube for:",search)
 
-		query = YoutubeSearch(search).to_dict()
+		#query = YoutubeSearch(search).to_dict()
+		url = "https://youtube.com/results?search_query="
+		query = urllib.parse.quote(search)
 
-		if(query == None or len(query) < 1):
+
+		try:
+			res = requests.get(url+query)
+			id = res.text.split("\"videoId\":\"")[1].split("\"")[0]
+		except Exception as e:
 			if(verbose):
-				print("Failed to find youtube ID")
+				print(e)
 			return "CANNOT_FIND_SONG"
-		if(verbose):
-			print("Found ID", query[0]["id"])
-
-		YOUTUBE_CACHE[self.name] = query[0]["id"]
-		return query[0]["id"]
-
+		else:
+			if(verbose):
+				print("Found ID", id)
+			YOUTUBE_CACHE[self.name] = id
+			return id
+			
 	def downloadAudio(self,override=False,verbose=False):
 
 		if(verbose):

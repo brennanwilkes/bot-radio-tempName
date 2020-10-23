@@ -94,7 +94,8 @@ def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",verbose=False):
 
 	writeDJAudio(AUDIO_CACHE+"req1",voice=voice,text=reqText1,verbose=verbose)
 	availableVoices = googlePrimaryVoices.copy()
-	availableVoices.remove(voice)
+	if voice in availableVoices:
+		availableVoices.remove(voice)
 	writeDJAudio(AUDIO_CACHE+"req2",voice=random.choice(availableVoices),text=reqText2,verbose=verbose)
 	writeDJAudio(AUDIO_CACHE+"req3",voice=voice,text=reqText3,verbose=verbose)
 
