@@ -149,13 +149,13 @@ class DiscordClient(discord.Client):
 		args = message.content.split(" ")
 		cmd = args[0][1:]
 
-		if cmd == "queue":
+		if cmd == "queue" or cmd == "q":
 			if not self.playlist or not self.currentSong:
 				await message.channel.send("Error! Playlist is empty")
 			else:
 				await message.channel.send(self.generateQueueText(self.currentSong,self.playlist.songs))
 
-		elif cmd == "play":
+		elif cmd == "play" or cmd =="p":
 			await message.add_reaction("\U0001F4FB")
 
 			reqStation = None
@@ -217,8 +217,9 @@ class DiscordClient(discord.Client):
 									self.console(e)
 									return
 								else:
-									s.addPlaylist(addedPlaylist)
+									numAdded = s.addPlaylist(addedPlaylist,verbose=self.verbose)
 									s.saveToFile(verbose=self.verbose)
+									await message.channel.send("Added "+str(numAdded)+" songs to "+s.waveLength)
 									return
 						await message.channel.send("Could not find station "+args[2])
 					else:
@@ -247,7 +248,27 @@ class DiscordClient(discord.Client):
 						await message.channel.send("Invalid form. Please use:\n"+self.commandChar+"station owner [wavelength]\nin order to take ownership of a station")
 				elif(args[1] == "list"):
 					await message.channel.send("```Available stations:"+'\n'.join([s.waveLength+" | "+s.name for s in stations])+"```")
-
+				elif(args[1] == "voice" or args[1] == "host"):
+					if len(args) > 3 and args[3] in googleRadioVoices:
+						for s in stations:
+							if(s.waveLength == args[2]):
+								s.host = args[3]
+								s.saveToFile(verbose=self.verbose)
+								await message.channel.send("Station "+args[2]+" host voice set to "+self.voice)
+								return
+						await message.channel.send("Could not find station "+args[2])
+					else:
+						if(len(args) > 1):
+							await message.channel.send("Invalid voice "+args[1])
+						await message.channel.send("```Available voices: "+"\n"+'\n'.join([v for v in googleRadioVoices])+"```")
+			else:
+				await message.channel.send('''```Station Commands:
+				$station create [wavelength]
+				$station add [wavelength] [playlist]
+				$station name [wavelength] [name]
+				$station voice [wavelength] [voice]
+				$station owner [wavelength]
+				$station list```''')
 
 		elif cmd == "voice":
 			if len(args) > 1 and args[1] in googleRadioVoices:
@@ -295,7 +316,9 @@ class DiscordClient(discord.Client):
 			$station create [wavelength]
 			$station add [wavelength] [playlist]
 			$station name [wavelength] [name]
+			$station voice [wavelength] [voice]
 			$station owner [wavelength]
+			$station list
 			$voice
 			$voice [voice]```''')
 		else:

@@ -24,11 +24,11 @@ class Station:
 		if(playlistJSON):
 			self.addPlaylistJSON(playlistJSON)
 		if(playlist):
-			self.addPlaylist(playlist)
+			self.addPlaylist(playlist, verbose=verbose)
 		if(station):
 			self.waveLength = station.waveLength
 			self.host = station.host
-			self.addPlaylist(station)
+			self.addPlaylist(station, verbose=verbose)
 
 		if(loadFromFile):
 			f = open(loadFromFile, "r")
@@ -49,12 +49,24 @@ class Station:
 		for songJSON in playlistJSON["tracks"]["items"]:
 			self.songs.append(Song(songJSON["track"]))
 
-	def addPlaylist(self, playlist):
+	def addPlaylist(self, playlist, verbose=False):
 		self.owner=playlist.owner
 		self.name=playlist.name
 		self.description=playlist.description
+
+		curSongCache = {}
+		for song in self.songs:
+			curSongCache[song.name] = True
+
+		numAdded = 0
 		for song in playlist.songs:
-			self.songs.append(Song(song=song))
+			if(song.name in curSongCache):
+				if(verbose):
+					print(song.name,"already in",self.waveLength)
+			else:
+				numAdded += 1
+				self.songs.append(Song(song=song))
+		return numAdded
 
 	def prepareNextSongs(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
