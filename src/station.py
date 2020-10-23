@@ -1,5 +1,5 @@
 import os, sys
-import pickle, json
+import json
 import dj
 from globalSingleton import *
 
@@ -23,13 +23,15 @@ class Station:
 			self.addPlaylist(station)
 
 		if(loadFromFile):
-			f = open(loadFromFile, 'rb')
-			load = pickle.load(f)
+			f = open(loadFromFile, "r")
+			data = f.read()
 			f.close()
+			load = json.loads(data)
+			for s in load["songs"]:
+				self.songs.append(Song(songDict=s))
 
-			self.songs = load.songs
-			self.host = load.host
-			self.waveLength = load.waveLength
+			self.host = load["host"]
+			self.waveLength = load["waveLength"]
 		else:
 			fn = self.saveToFile()
 			if(verbose): print("Station saved to "+fn)

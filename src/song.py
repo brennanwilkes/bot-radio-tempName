@@ -21,7 +21,7 @@ class Song:
 	fileName = None
 	extension = None
 
-	def __init__(self, songJSON=None, song=None):
+	def __init__(self, songJSON=None, song=None, songDict=None):
 
 		#Copy constructor
 		if(song):
@@ -34,6 +34,16 @@ class Song:
 			self.name = song.name
 			self.duration = song.duration
 			self.genres = song.genres
+		elif(songDict):
+			self.album = songDict["album"]
+			self.release = songDict["release"]
+			self.artists = []
+			for a in songDict["artists"]:
+				self.artists.append(a)
+			self.explicit = songDict["explicit"]
+			self.name = songDict["name"]
+			self.duration = songDict["duration"]
+			self.genres = songDict["genres"]
 
 		else:
 			self.album = songJSON["album"]["name"]
