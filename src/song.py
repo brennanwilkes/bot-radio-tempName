@@ -9,6 +9,7 @@ from globalSingleton import *
 from requireHeaders import PREFIX_PATH, commaSeparator
 MAIN_PATH = PREFIX_PATH+"/.."
 
+YOUTUBE_CACHE = {}
 
 class Song:
 
@@ -34,6 +35,9 @@ class Song:
 			self.name = song.name
 			self.duration = song.duration
 			self.genres = song.genres
+			self.fileName = song.fileName
+			self.youtubeID = song.youtubeID
+			self.extension = song.extension
 		elif(songDict):
 			self.album = songDict["album"]
 			self.release = songDict["release"]
@@ -44,6 +48,9 @@ class Song:
 			self.name = songDict["name"]
 			self.duration = songDict["duration"]
 			self.genres = songDict["genres"]
+			self.fileName = songDict["fileName"]
+			self.youtubeID = songDict["youtubeID"]
+			self.extension = songDict["extension"]
 
 		else:
 			self.album = songJSON["album"]["name"]
@@ -65,7 +72,13 @@ class Song:
 
 	def prepare(self,override=False,verbose=False):
 		if(self.youtubeID == None):
-			self.youtubeID = self.getYoutubeSearch(verbose=verbose)
+			if(self.name in YOUTUBE_CACHE):
+				self.youtubeID = YOUTUBE_CACHE[self.name]
+			else:
+				self.youtubeID = self.getYoutubeSearch(verbose=verbose)
+		else:
+			YOUTUBE_CACHE[self.name] = self.youtubeID
+
 		if(self.youtubeID == "CANNOT_FIND_SONG"):
 			return False
 		if(not self.genres):
@@ -80,7 +93,7 @@ class Song:
 
 	def getYoutubeSearch(self,verbose=False):
 
-		search = self.name + " by " + commaSeparator(self.artists) + " audio official song"
+		search = self.name + " by " + commaSeparator(self.artists) + " audio"
 
 		if(verbose):
 			print("Querying youtube for:",search)
@@ -88,7 +101,13 @@ class Song:
 		query = YoutubeSearch(search, max_results=1).to_dict()
 
 		if(query == None or len(query) < 1):
+			if(verbose):
+				print("Failed to find youtube ID")
 			return "CANNOT_FIND_SONG"
+		if(verbose):
+			print("Found ID", query[0]["id"])
+
+		YOUTUBE_CACHE[self.name] = query[0]["id"]
 		return query[0]["id"]
 
 	def downloadAudio(self,override=False,verbose=False):

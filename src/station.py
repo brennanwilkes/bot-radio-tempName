@@ -19,12 +19,15 @@ class Station:
 		else:
 			self.name = "GCS "+waveLength
 		self.owner = owner
+		self.description = ""
 
 		if(playlistJSON):
 			self.addPlaylistJSON(playlistJSON)
 		if(playlist):
 			self.addPlaylist(playlist)
 		if(station):
+			self.waveLength = station.waveLength
+			self.host = station.host
 			self.addPlaylist(station)
 
 		if(loadFromFile):
@@ -37,36 +40,46 @@ class Station:
 
 			self.host = load["host"]
 			self.waveLength = load["waveLength"]
-		else:
-			fn = self.saveToFile()
-			if(verbose): print("Station saved to "+fn)
+			self.name = load["name"]
+			self.owner = load["owner"]
+		elif(not station):
+			self.saveToFile(verbose=verbose)
 
 	def addPlaylistJSON(self, playlistJSON):
 		for songJSON in playlistJSON["tracks"]["items"]:
 			self.songs.append(Song(songJSON["track"]))
 
 	def addPlaylist(self, playlist):
+		self.owner=playlist.owner
+		self.name=playlist.name
+		self.description=playlist.description
 		for song in playlist.songs:
 			self.songs.append(Song(song=song))
 
 	def prepareNextSongs(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
+			if(verbose): print("Preparing "+str(i+1)+"/"+str(min(len(self.songs),num)))
 			if(i >= len(self.songs)):
 				break
 
 			suc = self.songs[i].prepare(verbose=verbose, override=override)
+
 			if not suc:
 				self.songs.pop(i)
 
-	def saveToFile(self,filename=None):
+		self.saveToFile(verbose=verbose)
+
+
+	def saveToFile(self,filename=None,verbose=False):
 		if(not filename): filename = MAIN_PATH+"/stations/station"+self.waveLength+".json"
 
-		serial = self.__dict__
+		serial = Station(station=self).__dict__
 		for s in range(len(serial["songs"])):
-			serial["songs"][s] = serial["songs"][s].__dict__
+			serial["songs"][s] = Song(song=serial["songs"][s]).__dict__
 
 		f = open(filename, 'w')
 		f.write(json.dumps(serial,indent=4))
 		f.close()
 
+		if(verbose): print("Station saved to "+filename)
 		return filename

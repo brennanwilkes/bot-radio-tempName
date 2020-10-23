@@ -34,6 +34,7 @@ class Playlist:
 
 	def prepareNextSongs(self, num=1, verbose=False, override=False):
 		for i in range(min(len(self.songs),num)):
+			if(verbose): print("Preparing "+str(i+1)+"/"+str(min(len(self.songs),num)))
 			if(i >= len(self.songs)):
 				break
 
