@@ -59,8 +59,43 @@ class DiscordClient(discord.Client):
 	async def cmdHelp(self,message=None,cmd=None,failed=False):
 		await message.channel.send("```Avalable commands:\n\t"+'\n\t'.join([parseCmdPrint(cmd[0][0],c[0]) for c in self.validCommands])+"```")
 
-	async def cmdPlay(self,message=None,cmd=None,failed=False):
-		pass
+	async def cmdPlay(self,message=None,cmd=None,failed=False,usage=None):
+
+		await message.add_reaction("\U0001F4FB")
+
+		reqStation = None
+		if(len(args) > 1):
+			for s in stations:
+				if(args[1] == s.waveLength):
+					reqStation = s
+		if(reqStation):
+			self.playlist = reqStation
+			self.voice = self.playlist.host
+
+		else:
+			try:
+				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(args[1]))
+
+			except Exception as e:
+				await message.channel.send("Invalid Playlist!")
+				self.console(e)
+				return
+
+		await message.add_reaction("\U0001F44C")
+
+
+		random.shuffle(self.playlist.songs)
+		dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
+
+		self.playlist.prepareNextSongs(3,override=True,verbose=self.verbose)
+
+		self.console("Connecting to voice channel "+message.author.voice.channel.name)
+		#connect to the voice channel that the person who wrote the message is in
+		if self.VC and (not self.VC == message.author.voice.channel):
+			await self.VC.disconnect()
+		self.VC = await message.author.voice.channel.connect()
+
+		await self.playNextSong(None)
 
 	def __init__(self):
 		super(DiscordClient, self).__init__()
@@ -194,7 +229,10 @@ class DiscordClient(discord.Client):
 
 		for validCmd in self.validCommands:
 			if(cmd == validCmd[0][0]):
-				await validCmd[1](message=message,cmd=args,failed=(len(args) != len(validCmd[0])))
+				if(len(args) != len(validCmd[0])):
+					await message.channel.send("```Usage:\n\t"+parseCmdPrint(args[0][0],validCmd[0])+"```")
+				else:
+					await validCmd[1](message=message,cmd=args)
 
 		if cmd == "queue" or cmd == "q":
 			if not self.playlist or not self.currentSong:
