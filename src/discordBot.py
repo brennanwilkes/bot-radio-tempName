@@ -97,7 +97,7 @@ class DiscordClient(discord.Client):
 		await message.channel.send("Thank you for playing wing commander!")
 		await self.logout()
 
-	async def cmdPlay(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdPlay(self,message=None,cmd=None,failed=False):
 		await message.add_reaction("\U0001F4FB")
 		reqStation = None
 		for s in stations:
@@ -122,7 +122,7 @@ class DiscordClient(discord.Client):
 		random.shuffle(self.playlist.songs)
 		dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 
-		self.playlist.prepareNextSongs(3,verbose=self.verbose)
+		self.playlist.prepareNextSongs(1,verbose=self.verbose)
 
 		self.console("Connecting to voice channel "+message.author.voice.channel.name)
 		#connect to the voice channel that the person who wrote the message is in
@@ -132,7 +132,7 @@ class DiscordClient(discord.Client):
 
 		await self.playNextSong(None)
 
-	async def cmdStationCreate(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdStationCreate(self,message=None,cmd=None,failed=False):
 		duplicate = False
 		for s in stations:
 			duplicate = duplicate or (cmd[2] == s.waveLength)
@@ -143,7 +143,7 @@ class DiscordClient(discord.Client):
 			stations.append(s)
 			await message.channel.send("Created station "+s.waveLength)
 
-	async def cmdStationAdd(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdStationAdd(self,message=None,cmd=None,failed=False):
 		for s in stations:
 			if(s.waveLength == cmd[2]):
 				try:
@@ -159,7 +159,7 @@ class DiscordClient(discord.Client):
 					return
 		await message.channel.send("Could not find station "+cmd[2])
 
-	async def cmdStationName(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdStationName(self,message=None,cmd=None,failed=False):
 		for s in stations:
 			if(s.waveLength == cmd[2]):
 				s.name = " ".join(cmd[3:])
@@ -168,7 +168,7 @@ class DiscordClient(discord.Client):
 				return
 		await message.channel.send("Could not find station "+cmd[2])
 
-	async def cmdStationOwner(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdStationOwner(self,message=None,cmd=None,failed=False):
 			for s in stations:
 				if(s.waveLength == cmd[2]):
 					s.owner = message.author.nick
@@ -177,10 +177,19 @@ class DiscordClient(discord.Client):
 					return
 			await message.channel.send("Could not find station "+cmd[2])
 
-	async def cmdStationList(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdStationList(self,message=None,cmd=None,failed=False):
 			await message.channel.send("```Available stations:"+'\n'.join([s.waveLength+" | "+s.name for s in stations])+"```")
 
-	async def cmdStationVoice(self,message=None,cmd=None,failed=False,usage=None):
+	async def cmdStationCache(self,message=None,cmd=None,failed=False):
+		for s in stations:
+			if(s.waveLength == cmd[2]):
+				await message.channel.send("Caching "+str(len(s.songs))+" songs in station "+cmd[2])
+				s.preCache(verbose=self.verbose)
+				await message.channel.send("Successfully cached "+str(len(s.songs))+" songs in station "+cmd[2])
+				return
+		await message.channel.send("Could not find station "+cmd[2])
+
+	async def cmdStationVoice(self,message=None,cmd=None,failed=False):
 			if cmd[3] in googleRadioVoices:
 				for s in stations:
 					if(s.waveLength == cmd[2]):
@@ -204,6 +213,7 @@ class DiscordClient(discord.Client):
 			[["station","name","?wavelength","?name"],self.cmdStationName],
 			[["station","voice","?wavelength","?voice"],self.cmdStationVoice],
 			[["station","owner","?wavelength"],self.cmdStationOwner],
+			[["station","cache","?wavelength"],self.cmdStationCache],
 			[["station","list"],self.cmdStationList],
 			[["voice","?voice|list"],self.cmdVoice],
 			[["request","?song"],self.cmdRequest],
