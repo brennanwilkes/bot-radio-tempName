@@ -282,7 +282,8 @@ class DiscordClient(discord.Client):
 
 		self.mode = 1 - self.mode
 		if(self.mode == 0):
-			djFn = self.playlist.songs[0].fileName+"-welcome-dj" if welcome else self.currentSong.fileName+"-dj-"+self.playlist.songs[0].youtubeID
+			djFn = self.playlist.songs[0].fileName+"-welcome-dj" if welcome else self.currentSong.fileName+"-dj-"+self.playlist.getNextSong(remove=False).youtubeID
+			self.console("Playing DJ track "+djFn)
 			self.VC.play(await self.getSongSource(glob.glob(djFn+".*")[0]), after=self.triggerNextSong)
 		else:
 

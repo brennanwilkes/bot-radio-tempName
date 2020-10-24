@@ -25,14 +25,20 @@ class Playlist:
 		self.songs = []
 		for songJSON in playlistJSON["tracks"]["items"]:
 			self.songs.append(Song(songJSON["track"]))
-
+		self.currentSong = None
 
 	def insertSong(self,newSong,message,voice,fn,verbose=False):
 		self.songs.insert(0,newSong)
 		self.prepareNextSongs(1,verbose=verbose,override=True)
-		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
+		if(verbose):
+			print("Preparing DJ request audio for "+self.currentSong.name+" -> "+newSong.name)
+		dj.writeDJRequestAudio(self.currentSong.fileName+"-dj-"+newSong.youtubeID,newSong,message,voice=voice,verbose=verbose)
 
-	def prepareNextSongs(self, num=1, verbose=False, override=False, voice=None,welcome=False):
+
+	def prepareNextSongs(self, num=1, verbose=False, override=False, voice="en-AU-Wavenet-B",welcome=False, prevFn=None):
+		if((not prevFn) and (self.currentSong != None)):
+			prevFn = self.currentSong.fileName
+
 		for i in range(min(len(self.songs),num)):
 			if(verbose): print("Preparing "+str(i+1)+"/"+str(min(len(self.songs),num)))
 			if(i >= len(self.songs)):
@@ -43,13 +49,13 @@ class Playlist:
 				if (i==0 and welcome):
 					djFn = self.songs[i].fileName+"-welcome-dj"
 				else:
-					if(len(prevFn)>0 and i==0):
+					if(prevFn and i==0):
 						djFn = prevFn+"-dj-"+self.songs[i].youtubeID
 					else:
 						djFn = self.songs[i-1].fileName+"-dj-"+self.songs[i].youtubeID
 
 				if override or not glob.glob(djFn+".*"):
-					if(i == 0):
+					if(i == 0 and welcome):
 						if(verbose):
 							print("Preparing DJ welcome audio")
 						text = dj.getWelcomeText(self)
@@ -62,5 +68,9 @@ class Playlist:
 			else:
 				self.songs.pop(i)
 
-	def getNextSong(self):
+	def getNextSong(self,remove=True):
+		if(not remove):
+			return self.songs[0]
+
+		self.currentSong = self.songs[0]
 		return self.songs.pop(0)

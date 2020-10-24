@@ -162,6 +162,8 @@ def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",verbose=False):
 
 	fullReq = req1 + req2 + req3
 	fullReq.export(fn+".mp3", format="mp3")
+	if(verbose):
+		print("Request expored to "+fn+".mp3")
 
 
 def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,verbose=False):

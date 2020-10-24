@@ -98,7 +98,7 @@ class Station:
 						djFn = self.songs[i-1].fileName+"-dj-"+self.songs[i].youtubeID
 
 				if override or not glob.glob(djFn+".*"):
-					if(i == 0):
+					if(i == 0 and welcome):
 						if(verbose):
 							print("Preparing DJ welcome audio")
 						text = dj.getWelcomeText(self)
@@ -115,7 +115,9 @@ class Station:
 	def insertSong(self,newSong,message,voice,fn,verbose=False):
 		self.requests.insert(0,newSong)
 		self.requests[0].prepare(verbose=verbose)
-		dj.writeDJRequestAudio(fn,newSong,message,voice=voice,verbose=verbose)
+		if(verbose):
+			print("Preparing DJ request audio for "+self.currentSong.name+" -> "+newSong.name)
+		dj.writeDJRequestAudio(self.currentSong.fileName+"-dj-"+newSong.youtubeID,newSong,message,voice=voice,verbose=verbose)
 
 
 	def saveToFile(self,filename=None,verbose=False):
@@ -132,12 +134,16 @@ class Station:
 		if(verbose): print("Station saved to "+filename)
 		return filename
 
-	def getNextSong(self):
+	def getNextSong(self, remove = True):
 		if(len(self.requests) > 0):
+			if(not remove):
+				return self.requests[0]
 			s = self.requests.pop(0)
 			self.currentSong = s
 			return s
 		else:
+			if(not remove):
+				return self.songs[0]
 			next = self.songs.pop(0)
 			self.songs.append(next)
 			self.currentSong = next
