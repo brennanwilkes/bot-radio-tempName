@@ -71,7 +71,6 @@ class Song:
 
 			self.genres = None
 
-
 	def prepare(self,override=False,verbose=False,downloadFile=True):
 		if(self.youtubeID == None):
 			if(self.name in YOUTUBE_CACHE):
@@ -106,10 +105,10 @@ class Song:
 
 		if(verbose):
 			print("Using query: "+query)
-			
+
 		try:
 			res = requests.get(url+query)
-			id = res.text.split("\"videoId\":\"")[1].split("\"")[0]
+			id = res.text.split("\"videoRenderer\":{\"videoId\":\"")[1].split("\"")[0]
 		except Exception as e:
 			if(verbose):
 				print(e)
