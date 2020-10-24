@@ -21,6 +21,7 @@ class Station:
 			self.name = "GCS "+waveLength
 		self.owner = owner
 		self.description = ""
+		self.genres = {}
 
 		if(playlistJSON):
 			self.addPlaylistJSON(playlistJSON)
@@ -29,6 +30,7 @@ class Station:
 		if(station):
 			self.waveLength = station.waveLength
 			self.host = station.host
+			self.genres = station.genres
 			self.addPlaylist(station, verbose=verbose)
 
 		if(loadFromFile):
@@ -39,6 +41,7 @@ class Station:
 			for s in load["songs"]:
 				self.songs.append(Song(songDict=s))
 
+			self.genres = load["genres"]
 			self.host = load["host"]
 			self.waveLength = load["waveLength"]
 			self.name = load["name"]
@@ -114,3 +117,18 @@ class Station:
 		for s in self.songs:
 			s.prepare(verbose=verbose,downloadFile=False)
 			self.saveToFile(verbose=False)
+
+	def calcGenres(self,verbose=False):
+		self.genres = {}
+		for s in self.songs:
+			if(s.genres):
+				for g in s.genres:
+					if g in self.genres:
+						self.genres[g] += 1
+					else:
+						if(verbose):
+							print("Added genre "+g)
+						self.genres[g] = 1
+
+		self.saveToFile(verbose=verbose)
+		return self.genres

@@ -185,7 +185,13 @@ class DiscordClient(discord.Client):
 			if(s.waveLength == cmd[2]):
 				await message.channel.send("Caching "+str(len(s.songs))+" songs in station "+cmd[2])
 				s.preCache(verbose=self.verbose)
+
+				gen = s.calcGenres(verbose=self.verbose)
+				sortedGen = sorted(gen.items(), key=lambda x: x[1], reverse=True)
+
 				await message.channel.send("Successfully cached "+str(len(s.songs))+" songs in station "+cmd[2])
+				await message.channel.send("Top genres: "+", ".join([s[0] for s in sortedGen[:3]]))
+
 				return
 		await message.channel.send("Could not find station "+cmd[2])
 
