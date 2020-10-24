@@ -96,16 +96,17 @@ class Song:
 
 	def getYoutubeSearch(self,verbose=False):
 
-		search = self.name + " by " + commaSeparator(self.artists) + " audio"
+		search = self.name + " by " + commaSeparator(self.artists) + " audio official song"
 
 		if(verbose):
 			print("Querying youtube for:",search)
 
-		#query = YoutubeSearch(search).to_dict()
 		url = "https://youtube.com/results?search_query="
-		query = urllib.parse.quote(search)
+		query = "+".join([urllib.parse.quote(p) for p in search.split(" ")])
 
-
+		if(verbose):
+			print("Using query: "+query)
+			
 		try:
 			res = requests.get(url+query)
 			id = res.text.split("\"videoId\":\"")[1].split("\"")[0]
