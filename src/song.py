@@ -108,7 +108,7 @@ class Song:
 
 		try:
 			res = requests.get(url+query)
-			id = res.text.split("\"videoId\":\"")[1].split("\"")[0]
+			id = res.text.split("\"videoRenderer\":{\"videoId\":\"")[1].split("\"")[0]
 		except Exception as e:
 			if(verbose):
 				print(e)
