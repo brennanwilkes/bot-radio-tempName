@@ -109,3 +109,8 @@ class Station:
 			next = self.songs.pop(0)
 			self.songs.append(next)
 			return next
+
+	def preCache(self,verbose=False):
+		for s in self.songs:
+			s.prepare(verbose=verbose,downloadFile=False)
+			self.saveToFile(verbose=False)

@@ -72,7 +72,7 @@ class Song:
 			self.genres = None
 
 
-	def prepare(self,override=False,verbose=False):
+	def prepare(self,override=False,verbose=False,downloadFile=True):
 		if(self.youtubeID == None):
 			if(self.name in YOUTUBE_CACHE):
 				self.youtubeID = YOUTUBE_CACHE[self.name]
@@ -88,7 +88,8 @@ class Song:
 
 		self.fileName = MAIN_PATH+"/audioCache/"+self.youtubeID
 
-		return self.downloadAudio(override=override, verbose=verbose)
+		if(downloadFile):
+			return self.downloadAudio(override=override, verbose=verbose)
 
 	def getAudioFilename(self):
 		return self.fileName + "." + self.extension
@@ -117,7 +118,7 @@ class Song:
 				print("Found ID", id)
 			YOUTUBE_CACHE[self.name] = id
 			return id
-			
+
 	def downloadAudio(self,override=False,verbose=False):
 
 		if(verbose):
