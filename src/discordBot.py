@@ -120,9 +120,9 @@ class DiscordClient(discord.Client):
 
 
 		random.shuffle(self.playlist.songs)
-		dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
+		#dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 
-		self.playlist.prepareNextSongs(1,verbose=self.verbose)
+		self.playlist.prepareNextSongs(3,verbose=self.verbose, voice=self.voice,welcome=True)
 
 		self.console("Connecting to voice channel "+message.author.voice.channel.name)
 		#connect to the voice channel that the person who wrote the message is in
@@ -130,7 +130,7 @@ class DiscordClient(discord.Client):
 			await self.VC.disconnect()
 		self.VC = await message.author.voice.channel.connect()
 
-		await self.playNextSong(None)
+		await self.playNextSong(None,welcome=True)
 
 	async def cmdStationCreate(self,message=None,cmd=None,failed=False):
 		duplicate = False
@@ -274,7 +274,7 @@ class DiscordClient(discord.Client):
 	def triggerNextSong(self,error):
 		asyncio.run(self.playNextSong(error))
 
-	async def playNextSong(self,error):
+	async def playNextSong(self,error,welcome=False):
 
 		if(len(self.playlist.songs)==0):
 			self.console("Empty playlist")
@@ -282,7 +282,8 @@ class DiscordClient(discord.Client):
 
 		self.mode = 1 - self.mode
 		if(self.mode == 0):
-			self.VC.play(await self.getSongSource(glob.glob(DJ_PATH+".*")[0]), after=self.triggerNextSong)
+			djFn = self.playlist.songs[0].fileName+"-welcome-dj" if welcome else self.currentSong.fileName+"-dj-"+self.playlist.songs[0].youtubeID
+			self.VC.play(await self.getSongSource(glob.glob(djFn+".*")[0]), after=self.triggerNextSong)
 		else:
 
 			self.currentSong = self.playlist.getNextSong()
@@ -291,9 +292,8 @@ class DiscordClient(discord.Client):
 			songURL = self.currentSong.getAudioFilename()
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.prepareNextSongs(5,verbose=self.verbose)
+			self.playlist.prepareNextSongs(5,verbose=self.verbose, voice=self.voice,prevFn=self.currentSong.fileName)
 
-			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
 
 
 

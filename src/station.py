@@ -1,8 +1,10 @@
 import os, sys
 import json
+import glob
+import random
+
 import dj
 from globalSingleton import *
-
 from song import Song
 from requireHeaders import PREFIX_PATH, commaSeparator
 MAIN_PATH = PREFIX_PATH+"/.."
@@ -22,6 +24,7 @@ class Station:
 		self.owner = owner
 		self.description = ""
 		self.genres = {}
+		self.currentSong = None
 
 		if(playlistJSON):
 			self.addPlaylistJSON(playlistJSON)
@@ -72,7 +75,12 @@ class Station:
 				self.songs.append(Song(song=song))
 		return numAdded
 
-	def prepareNextSongs(self, num=1, verbose=False, override=False):
+	def prepareNextSongs(self, num=1, voice=None, verbose=False, override=False, welcome=False, prevFn=None):
+		if(not voice):
+			voice = self.host
+		if((not prevFn) and (self.currentSong != None)):
+			prevFn = self.currentSong.fileName
+
 		for i in range(min(len(self.songs),num)):
 			if(verbose): print("Preparing "+str(i+1)+"/"+str(min(len(self.songs),num)))
 			if(i >= len(self.songs)):
@@ -80,9 +88,28 @@ class Station:
 
 			suc = self.songs[i].prepare(verbose=verbose, override=override)
 
-			if not suc:
-				self.songs.pop(i)
+			if(suc):
+				if (i==0 and welcome):
+					djFn = self.songs[i].fileName+"-welcome-dj"
+				else:
+					if(prevFn and i==0):
+						djFn = prevFn+"-dj-"+self.songs[i].youtubeID
+					else:
+						djFn = self.songs[i-1].fileName+"-dj-"+self.songs[i].youtubeID
 
+				if override or not glob.glob(djFn+".*"):
+					if(i == 0):
+						if(verbose):
+							print("Preparing DJ welcome audio")
+						text = dj.getWelcomeText(self)
+					else:
+						if(verbose):
+							print("Preparing DJ audio for "+self.songs[i-1].name+" -> "+self.songs[i].name)
+						text = dj.filterDJText(random.choice(dj.templateDJTexts), self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
+					dj.writeGoogleAudio(voice,djFn,text,verbose=verbose)
+
+			else:
+				self.songs.pop(i)
 		self.saveToFile(verbose=verbose)
 
 	def insertSong(self,newSong,message,voice,fn,verbose=False):
@@ -107,10 +134,13 @@ class Station:
 
 	def getNextSong(self):
 		if(len(self.requests) > 0):
-			return self.requests.pop(0)
+			s = self.requests.pop(0)
+			self.currentSong = s
+			return s
 		else:
 			next = self.songs.pop(0)
 			self.songs.append(next)
+			self.currentSong = next
 			return next
 
 	def preCache(self,verbose=False):
