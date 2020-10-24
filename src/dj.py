@@ -100,11 +100,16 @@ templateDJTexts = [
 	"You've heard this song before, probably on the radio. SONG_NAME coming your way!",
 	"Here at GCS Radio we get exclusive access to the best music on this planet, and so many more! Here's the hottest hits of the next planet over, SONG_NAME",
 	"The song itself is called SONG_NAME, its SONG_GENRE. But wait. Wait, wait, wait. Did you know that this particular song, has been playing on my podcast and in my podcast automation workflow for the past month or so, and I have no idea who the artist is? GCS Radio. SONG_NAME."
+
 ]
 
 
-def filterDJText(text, pastSong, playlist):
-	curSong = playlist.songs[0]
+def filterDJText(text, pastSong, playlist=None, curSong = None, nm = None, desc = None, owner = None):
+	if(playlist):
+		curSong = playlist.songs[0]
+		nm = playlist.name
+		desc = playlist.description
+		owner = playlist.owner
 
 	text = re.sub("PAST_SONG_NAME", pastSong.name, text)
 	text = re.sub("PAST_SONG_ARTIST", commaSeparator(pastSong.artists), text)
@@ -118,9 +123,9 @@ def filterDJText(text, pastSong, playlist):
 	text = re.sub("SONG_RELEASE", str(parser.parse(curSong.release if (curSong!=None and len(curSong.release)>=2) else "2020").year), text)
 	text = re.sub("SONG_GENRE", random.choice(curSong.genres if curSong.genres else ["cool music"]), text)
 
-	text = re.sub("PLAYLIST_NAME", playlist.name, text)
-	text = re.sub("PLAYLIST_DESC", playlist.description, text)
-	text = re.sub("PLAYLIST_OWNER", playlist.owner, text)
+	text = re.sub("PLAYLIST_NAME", nm, text)
+	text = re.sub("PLAYLIST_DESC", desc, text)
+	text = re.sub("PLAYLIST_OWNER", owner, text)
 
 	text = re.sub("TIME", datetime.now().strftime("%I %M %p"), text)
 	text = re.sub("live", "lIve", text)
@@ -156,6 +161,8 @@ def writeDJRequestAudio(fn,req,message,voice="en-US-Wavenet-D",verbose=False):
 
 	fullReq = req1 + req2 + req3
 	fullReq.export(fn+".mp3", format="mp3")
+	if(verbose):
+		print("Request expored to "+fn+".mp3")
 
 
 def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=None,verbose=False):
@@ -164,7 +171,7 @@ def writeDJAudio(fn,voice="en-US-Wavenet-D",pastSong=None,playlist=None,text=Non
 
 	if(text and verbose):
 		print("Generating DJ for raw text with ",voice)
-	elif(verbose and len(playlist.songs) > 0):
+	elif(verbose and playlist and len(playlist.songs) > 0):
 		print("Generating DJ for song:",pastSong.name,"->",playlist.songs[0].name,"with",voice)
 	elif(verbose):
 		print("Playlist is empty")
