@@ -1,6 +1,6 @@
 import os, sys
 import json
-import glob
+import glob, re
 import random
 
 import dj
@@ -8,6 +8,17 @@ from globalSingleton import *
 from song import Song
 from requireHeaders import PREFIX_PATH, commaSeparator
 MAIN_PATH = PREFIX_PATH+"/.."
+
+
+stationtemplateDJTexts = [
+	"You're listening to WAVELENGTH FM, PLAYLIST_NAME. Next up, SONG_NAME",
+	"This is WAVELENGTH FM, PLAYLIST_NAME. Coming your way next is SONG_NAME",
+	"Coming right up next on PLAYLIST_NAME WAVELENGTH, we've got SONG_NAME by SONG_ARTIST",
+	"Hit SONG_GENRE music. All day. WAVELENGTH FM, PLAYLIST_NAME. Up next, SONG_NAME",
+	"WAVELENGTH FM PLAYLIST_NAME brings you the best SONG_GENRE and PAST_SONG_GENRE 24 7. Now playing SONG_NAME off of SONG_ALBUM."
+]
+
+
 
 
 class Station:
@@ -25,6 +36,7 @@ class Station:
 		self.description = ""
 		self.genres = {}
 		self.currentSong = None
+		self.customVoiceLines = []
 
 		if(playlistJSON):
 			self.addPlaylistJSON(playlistJSON)
@@ -34,6 +46,7 @@ class Station:
 			self.waveLength = station.waveLength
 			self.host = station.host
 			self.genres = station.genres
+			self.customVoiceLines = station.customVoiceLines
 			self.addPlaylist(station, verbose=verbose)
 
 		if(loadFromFile):
@@ -49,6 +62,11 @@ class Station:
 			self.waveLength = load["waveLength"]
 			self.name = load["name"]
 			self.owner = load["owner"]
+			self.description = load["description"]
+			if "customVoiceLines" in load:
+				self.customVoiceLines = load["customVoiceLines"]
+
+			
 		elif(not station):
 			self.saveToFile(verbose=verbose)
 
@@ -74,6 +92,12 @@ class Station:
 				numAdded += 1
 				self.songs.append(Song(song=song))
 		return numAdded
+
+	def filterStationDJText(self,text):
+
+		text = re.sub("WAVELENGTH", self.waveLength, text)
+
+		return text
 
 	def prepareNextSongs(self, num=1, voice=None, verbose=False, override=False, welcome=False, prevFn=None):
 		if(not voice):
@@ -105,7 +129,13 @@ class Station:
 					else:
 						if(verbose):
 							print("Preparing DJ audio for "+self.songs[i-1].name+" -> "+self.songs[i].name)
-						text = dj.filterDJText(random.choice(dj.templateDJTexts), self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
+
+						djScript = random.choice([random.choice(stationtemplateDJTexts), random.choice(dj.templateDJTexts + self.customVoiceLines)])
+						##APPLY CUSTOM TEXTS
+
+						text = dj.filterDJText(djScript, self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
+						text = self.filterStationDJText(text)
+
 					dj.writeGoogleAudio(voice,djFn,text,verbose=verbose)
 
 			else:
