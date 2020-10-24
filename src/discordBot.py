@@ -285,7 +285,7 @@ class DiscordClient(discord.Client):
 			songURL = self.currentSong.getAudioFilename()
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.prepareNextSongs(3,verbose=self.verbose)
+			self.playlist.prepareNextSongs(5,verbose=self.verbose)
 
 			dj.writeDJAudio(DJ_PATH,voice=self.voice,pastSong=self.currentSong,playlist=self.playlist,verbose=self.verbose)
 
