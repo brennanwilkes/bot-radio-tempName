@@ -119,7 +119,7 @@ class DiscordClient(discord.Client):
 		await message.add_reaction("\U0001F44C")
 
 
-		#random.shuffle(self.playlist.songs)
+		random.shuffle(self.playlist.songs)
 		dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 
 		self.playlist.prepareNextSongs(1,verbose=self.verbose)
