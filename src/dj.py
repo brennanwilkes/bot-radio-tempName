@@ -48,7 +48,14 @@ templateDJTexts = [
 	"The songs you want to hear, when you want to hear them, GCS radio live",
 	"Songs you didn't even know you wanted to hear, coming your way",
 	"The good vibes just keep coming with music from SONG_ARTIST up next",
-	"One of my personal favourites, PAST_SONG_NAME, great tune."
+	"One of my personal favourites, PAST_SONG_NAME, great tune.",
+	"Oh great, you've been listening to PAST_SONG_ARTIST. You're welcome.",
+	"The latest hits and the greatest memories on GCS radio live",
+	"Hit music right now on GCS radio live",
+	"You've heard it all here on GCS radio. Here's more SONG_GENRE by SONG_ARTIST. It's SONG_NAME next.",
+	"And here's some SONG_GENRE by SONG_ARTIST off of their album SONG_ALBUM",
+	"Again, in case you forgot, I'm your host, bot dot radio dot temp name, broadcasting live on GCS radio",
+
 ]
 
 
