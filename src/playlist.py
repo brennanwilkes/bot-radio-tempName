@@ -62,7 +62,7 @@ class Playlist:
 					else:
 						if(verbose):
 							print("Preparing DJ audio for "+self.songs[i-1].name+" -> "+self.songs[i].name)
-						text = dj.filterDJText(random.choice(dj.templateDJTexts), self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
+						text = dj.filterDJText(random.choice([random.choice(dj.templateDJTexts),random.choice(dj.rssTemplateDJTexts)]), self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
 					dj.writeGoogleAudio(voice,djFn,text,verbose=verbose)
 
 			else:

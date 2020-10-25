@@ -8,10 +8,17 @@ from datetime import datetime
 from googleCloud import writeGoogleAudio, googleRadioVoices, googlePrimaryVoices
 
 from requireHeaders import PREFIX_PATH, commaSeparator
+import rss
 from globalSingleton import *
 AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
 
-
+rssTemplateDJTets = [
+	"This just in from RSS_NAME, RSS_TITLE, RSS_DESC. Now, back to music, it's SONG_NAME coming up next.",
+	"And an update from RSS_NAME, RSS_TITLE, RSS_DESC. Once again that was RSS_NAME. You're listeing to GCS radio live, here's SONG_NAME by SONG_ARTIST",
+	"RSS_TITLE, RSS_DESC. That alert was from RSS_NAME, now, straight back to the SONG_GENRE. SONG_NAME by SONG_ARTIST next on GCS radio live",
+	"That was PAST_SONG_NAME, we now move on to RSS_NAME. RSS_TITLE, RSS_DESC. Now back to what you're here for, here's SONG_NAME off of SONG_ALBUM.",
+	"You're listening to GCS Radio live, now some RSS_NAME. RSS_TITLE, RSS_DESC. Back to the good stuff, we've got SONG_NAME coming up next."
+]
 templateDJTexts = [
 	"You're listening to GCS radio. Next up, SONG_NAME, by SONG_ARTIST.",
 	"That was PAST_SONG_NAME. Here's SONG_NAME.",
@@ -100,7 +107,6 @@ templateDJTexts = [
 	"You've heard this song before, probably on the radio. SONG_NAME coming your way!",
 	"Here at GCS Radio we get exclusive access to the best music on this planet, and so many more! Here's the hottest hits of the next planet over, SONG_NAME",
 	"The song itself is called SONG_NAME, its SONG_GENRE. But wait. Wait, wait, wait. Did you know that this particular song, has been playing on my podcast and in my podcast automation workflow for the past month or so, and I have no idea who the artist is? GCS Radio. SONG_NAME."
-
 ]
 
 
@@ -130,10 +136,15 @@ def filterDJText(text, pastSong, playlist=None, curSong = None, nm = None, desc 
 	text = re.sub("TIME", datetime.now().strftime("%I %M %p"), text)
 	text = re.sub("live", "lIve", text)
 
+	rssUpdate = rss.getRandomRSS()
+	text = re.sub("RSS_NAME", rssUpdate[0], text)
+	text = re.sub("RSS_TITLE", rssUpdate[1], text)
+	text = re.sub("RSS_DESC", rssUpdate[2], text)
+
 	return text
 
 def generateDJText(pastSong,playlist):
-	return filterDJText(random.choice(templateDJTexts),pastSong,playlist)
+	return filterDJText(random.choice([random.choice(templateDJTexts),random.choice(rssTemplateDJTexts)]),pastSong,playlist)
 
 
 
