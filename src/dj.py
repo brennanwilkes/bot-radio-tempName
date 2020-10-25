@@ -12,9 +12,9 @@ import rss
 from globalSingleton import *
 AUDIO_CACHE = PREFIX_PATH+"/../audioCache/"
 
-rssTemplateDJTets = [
+rssTemplateDJTexts = [
 	"This just in from RSS_NAME, RSS_TITLE, RSS_DESC. Now, back to music, it's SONG_NAME coming up next.",
-	"And an update from RSS_NAME, RSS_TITLE, RSS_DESC. Once again that was RSS_NAME. You're listeing to GCS radio live, here's SONG_NAME by SONG_ARTIST",
+	"And an update from RSS_NAME, RSS_TITLE, RSS_DESC. Once again that was RSS_NAME. You're listening to GCS radio live, here's SONG_NAME by SONG_ARTIST",
 	"RSS_TITLE, RSS_DESC. That alert was from RSS_NAME, now, straight back to the SONG_GENRE. SONG_NAME by SONG_ARTIST next on GCS radio live",
 	"That was PAST_SONG_NAME, we now move on to RSS_NAME. RSS_TITLE, RSS_DESC. Now back to what you're here for, here's SONG_NAME off of SONG_ALBUM.",
 	"You're listening to GCS Radio live, now some RSS_NAME. RSS_TITLE, RSS_DESC. Back to the good stuff, we've got SONG_NAME coming up next."
@@ -39,7 +39,7 @@ templateDJTexts = [
 	"Enjoying GCS radio? We have plenty more PAST_SONG_GENRE to come.",
 	"That song came out in PAST_SONG_RELEASE",
 	"Moving on to music from SONG_RELEASE, here's SONG_NAME",
-	"Next, some SONG_GENRE music, we're listeing to SONG_NAME",
+	"Next, some SONG_GENRE music, we're listening to SONG_NAME",
 	"PAST_SONG_ARTIST's album PAST_SONG_ALBUM has lots of other PAST_SONG_GENRE on it too.",
 	"Want to request a song? Call in now with dollarsign request in the chat. Until then, here's SONG_NAME",
 	"It is currently TIME. SONG_NAME coming your way.",

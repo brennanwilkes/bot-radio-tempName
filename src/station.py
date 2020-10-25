@@ -133,7 +133,7 @@ class Station:
 						djScript = random.choice([
 							random.choice(stationtemplateDJTexts),
 							random.choice(dj.templateDJTexts + self.customVoiceLines),
-							random.choice(dj.rssTemplateDJTets)])
+							random.choice(dj.rssTemplateDJTexts)])
 						##APPLY CUSTOM TEXTS
 
 						text = dj.filterDJText(djScript, self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
