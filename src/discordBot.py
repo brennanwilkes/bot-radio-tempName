@@ -122,15 +122,24 @@ class DiscordClient(discord.Client):
 		random.shuffle(self.playlist.songs)
 		#dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
 
-		self.playlist.prepareNextSongs(3,verbose=self.verbose, voice=self.voice,welcome=True)
 
-		self.console("Connecting to voice channel "+message.author.voice.channel.name)
-		#connect to the voice channel that the person who wrote the message is in
-		if self.VC and (not self.VC == message.author.voice.channel):
-			await self.VC.disconnect()
-		self.VC = await message.author.voice.channel.connect()
+		self.playlist.prepareNextSongs(2,verbose=self.verbose, voice=self.voice,welcome=True)
 
-		await self.playNextSong(None,welcome=True)
+
+		while(True):
+			try:
+				self.console("Connecting to voice channel "+message.author.voice.channel.name)
+				#connect to the voice channel that the person who wrote the message is in
+				if self.VC and (not self.VC == message.author.voice.channel):
+					await self.VC.disconnect()
+
+				self.VC = await message.author.voice.channel.connect()
+
+				await self.playNextSong(None,welcome=True)
+			except Exception as e:
+				print(e)
+			else:
+				break
 
 	async def cmdStationCreate(self,message=None,cmd=None,failed=False):
 		duplicate = False
@@ -293,7 +302,7 @@ class DiscordClient(discord.Client):
 			songURL = self.currentSong.getAudioFilename()
 
 			self.VC.play(await self.getSongSource(songURL), after=self.triggerNextSong)
-			self.playlist.prepareNextSongs(5,verbose=self.verbose, voice=self.voice,prevFn=self.currentSong.fileName)
+			self.playlist.prepareNextSongs(2,verbose=self.verbose, voice=self.voice,prevFn=self.currentSong.fileName)
 
 
 
