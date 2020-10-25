@@ -21,6 +21,27 @@ from station import Station
 #Path to store dj files
 DJ_PATH = PREFIX_PATH+"/../audioCache/dj"
 
+emojis = {
+	"0":"\U00000030\U0000FE0F\U000020E3",
+	"1":"\U00000031\U0000FE0F\U000020E3",
+	"2":"\U00000032\U0000FE0F\U000020E3",
+	"3":"\U00000033\U0000FE0F\U000020E3",
+	"4":"\U00000034\U0000FE0F\U000020E3",
+	"5":"\U00000035\U0000FE0F\U000020E3",
+	"6":"\U00000036\U0000FE0F\U000020E3",
+	"7":"\U00000037\U0000FE0F\U000020E3",
+	"8":"\U00000038\U0000FE0F\U000020E3",
+	"9":"\U00000039\U0000FE0F\U000020E3",
+	".":"\U0000002A\U0000FE0F\U000020E3"
+}
+
+def convertToEmoji(text):
+	em = []
+	for c in text:
+		if c in emojis:
+			em.append(emojis[c])
+	return em
+
 def parseCmdPrint(cmdChar,cmd):
 	build = cmdChar+" ".join([("["+cp[1:]+"]" if (cp[0]=="?" and not "|" in cp) else cp) for cp in cmd])
 	for arg in cmd:
@@ -106,23 +127,20 @@ class DiscordClient(discord.Client):
 		if(reqStation):
 			self.playlist = reqStation
 			self.voice = self.playlist.host
-
+			for c in convertToEmoji(reqStation.waveLength):
+				await message.add_reaction(c)
 		else:
 			try:
 				self.playlist = playlist.Playlist(spotifyConInstance.loadPlaylist(cmd[1]))
-
 			except Exception as e:
 				await message.channel.send("Invalid Playlist!")
 				self.console(e)
 				return
-
-		await message.add_reaction("\U0001F44C")
+			else:
+				await message.add_reaction("\U0001F44C")
 
 
 		random.shuffle(self.playlist.songs)
-		#dj.writeDJAudio(DJ_PATH,voice=self.voice,text=dj.getWelcomeText(self.playlist),verbose=self.verbose)
-
-
 		self.playlist.prepareNextSongs(2,verbose=self.verbose, voice=self.voice,welcome=True)
 
 
@@ -209,6 +227,8 @@ class DiscordClient(discord.Client):
 				for s in stations:
 					if(s.waveLength == cmd[2]):
 						s.host = cmd[3]
+						if(self.playlist == s):
+							self.voice = s.host
 						s.saveToFile(verbose=self.verbose)
 						await message.channel.send("Station "+cmd[2]+" host voice set to "+self.voice)
 						return
