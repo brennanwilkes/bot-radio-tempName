@@ -66,7 +66,7 @@ class Station:
 			if "customVoiceLines" in load:
 				self.customVoiceLines = load["customVoiceLines"]
 
-			
+
 		elif(not station):
 			self.saveToFile(verbose=verbose)
 
@@ -130,7 +130,10 @@ class Station:
 						if(verbose):
 							print("Preparing DJ audio for "+self.songs[i-1].name+" -> "+self.songs[i].name)
 
-						djScript = random.choice([random.choice(stationtemplateDJTexts), random.choice(dj.templateDJTexts + self.customVoiceLines)])
+						djScript = random.choice([
+							random.choice(stationtemplateDJTexts),
+							random.choice(dj.templateDJTexts + self.customVoiceLines),
+							random.choice(dj.rssTemplateDJTets)])
 						##APPLY CUSTOM TEXTS
 
 						text = dj.filterDJText(djScript, self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
