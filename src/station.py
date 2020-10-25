@@ -18,6 +18,11 @@ stationtemplateDJTexts = [
 	"WAVELENGTH FM PLAYLIST_NAME brings you the best SONG_GENRE and PAST_SONG_GENRE 24 7. Now playing SONG_NAME off of SONG_ALBUM."
 ]
 
+rssStationTemplateDJTexts = [
+	"This is WAVELENGTH FM, here's RSS_NAME with some news. RSS_TITLE, RSS_DESC. Once again that was RSS_NAME on WAVELENGTH FM. Next up we've got some SONG_GENRE by SONG_ARTIST coming your way, here's SONG_NAME.",
+	"And an update coming your way exclusive to listeners of WAVELENGTH FM. RSS_TITLE, RSS_DESC. That was brought to you by RSS_NAME, exclusive on WAVELENGTH FM. Now back to what you're here for, we've got SONG_NAME by SONG_ARTIST coming your way.",
+	"Music. News. Weather. WAVELENGTH FM has it all. RSS_TITLE, RSS_DESC. Now here's SONG_NAME by SONG_ARTIST, exclusive on WAVELENGTH FM."
+]
 
 
 
@@ -131,9 +136,9 @@ class Station:
 							print("Preparing DJ audio for "+self.songs[i-1].name+" -> "+self.songs[i].name)
 
 						djScript = random.choice([
-							random.choice(stationtemplateDJTexts),
-							random.choice(dj.templateDJTexts + self.customVoiceLines),
-							random.choice(dj.rssTemplateDJTexts)])
+							random.choice(stationtemplateDJTexts + self.customVoiceLines),
+							random.choice(dj.templateDJTexts),
+							random.choice(dj.rssTemplateDJTexts + rssStationTemplateDJTexts)])
 						##APPLY CUSTOM TEXTS
 
 						text = dj.filterDJText(djScript, self.songs[i-1], curSong = self.songs[i], nm = self.name, desc = self.description, owner = self.owner)
